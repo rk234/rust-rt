@@ -1,5 +1,6 @@
 use raylib::prelude::*;
 mod rendering;
+mod scene;
 
 fn main() {
     let (mut rl, thread) = raylib::init()
