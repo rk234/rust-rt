@@ -1,7 +1,7 @@
 use crate::scene::Scene;
 use rand::Rng;
 use raylib::prelude::*;
-use std::ops::Add;
+use std::{ops::Add, time::Instant};
 
 pub const EPSILON: f32 = 0.00001f32;
 
@@ -42,25 +42,30 @@ impl RayCamera {
         screen_height: usize,
     ) -> Ray {
         let mut rng = rand::thread_rng();
+
         let adjacent = Vector3::new(0f32, 1f32, 0f32)
             .cross(self.direction)
-            .normalized();
-        let local_up = adjacent.cross(self.direction).normalized();
+            .normalized()
+            .scale_by(
+                (self.viewport_size.x)
+                    * (screen_x as f32 + rng.gen_range(-0.5f32..0.5f32) / screen_width as f32),
+            );
+        let local_up = adjacent.cross(self.direction).normalized().scale_by(
+            (self.viewport_size.y)
+                * (screen_y as f32 + rng.gen_range(-0.5f32..0.5f32) / screen_height as f32),
+        );
+
         let bottom_left = adjacent
             .scale_by(-self.viewport_size.x as f32 / 2f32)
             .add(local_up.scale_by(-self.viewport_size.y as f32 / 2f32));
+        let norm_dir = self.direction.scale_by(self.near_plane);
 
-        let dir = bottom_left
-            .add(adjacent.scale_by(
-                (self.viewport_size.x)
-                    * (screen_x as f32 + rng.gen_range(-0.5f32..0.5f32) / screen_width as f32),
-            ))
-            .add(local_up.scale_by(
-                (self.viewport_size.y)
-                    * (screen_y as f32 + rng.gen_range(-0.5f32..0.5f32) / screen_height as f32),
-            ))
-            .add(self.direction.scale_by(self.near_plane))
-            .normalized();
+        let dir = Vector3::new(
+            bottom_left.x + adjacent.x + local_up.x + norm_dir.x,
+            bottom_left.y + adjacent.y + local_up.y + norm_dir.y,
+            bottom_left.z + adjacent.z + local_up.z + norm_dir.z,
+        )
+        .normalized();
 
         return Ray::new(self.position, dir);
     }
@@ -110,6 +115,30 @@ impl Framebuffer {
     pub fn accum_pixel(&mut self, x: usize, y: usize, color: Vector3) {
         self.data[x + y * self.width] += color;
     }
+
+    pub fn clear(&mut self) {
+        for i in 0..self.data.len() {
+            self.data[i] = Vector3::new(0f32, 0f32, 0f32);
+        }
+    }
+
+    pub fn normalize(&mut self, scale: f32) {
+        for i in 0..self.data.len() {
+            self.data[i] /= scale;
+        }
+    }
+
+    pub fn to_bytes(&self) -> Vec<u8> {
+        let mut bytes: Vec<u8> = Vec::new();
+        for color in &self.data {
+            bytes.push((color.x * 255f32) as u8);
+            bytes.push((color.y * 255f32) as u8);
+            bytes.push((color.z * 255f32) as u8);
+            bytes.push(255);
+        }
+
+        return bytes.to_owned();
+    }
 }
 
 pub struct Renderer<'a> {
@@ -122,7 +151,7 @@ pub struct Renderer<'a> {
 impl Renderer<'_> {
     pub fn new<'a>(scene: &'a Scene, camera: &'a RayCamera) -> Renderer<'a> {
         return Renderer {
-            num_samples: 1,
+            num_samples: 0,
             scene,
             camera,
             num_bounces: 4,
@@ -130,12 +159,16 @@ impl Renderer<'_> {
     }
 
     pub fn render_sample(&mut self, width: usize, height: usize, frame_buffer: &mut Framebuffer) {
+        //let now = Instant::now();
+
         for y in 0..frame_buffer.height {
             for x in 0..frame_buffer.width {
+                //println!("({}, {})", x, y);
                 let ray = self.camera.gen_primary_ray(x, y, width, height);
-                frame_buffer.accum_pixel(x, y, sky_color(ray))
+                frame_buffer.accum_pixel(x, y, sky_color(ray));
             }
         }
+        //println!("\tOuter Elapsed: {}", now.elapsed().as_micros());
 
         self.num_samples += 1;
     }
@@ -147,26 +180,23 @@ impl Renderer<'_> {
         frame_buffer: &mut Framebuffer,
         samples: u32,
     ) {
+        frame_buffer.clear();
+
         for _ in 0..samples {
             self.render_sample(width, height, frame_buffer);
         }
 
-        for y in 0..frame_buffer.height {
-            for x in 0..frame_buffer.width {
-                frame_buffer.set_pixel(
-                    x,
-                    y,
-                    frame_buffer
-                        .get_pixel(x, y)
-                        .scale_by(1f32 / (self.num_samples as f32)),
-                );
-            }
-        }
+        frame_buffer.normalize(self.num_samples as f32);
+
+        self.num_samples = 0;
     }
 }
 
 fn sky_color(ray: Ray) -> Vector3 {
     let t = 0.5f32 * (ray.direction.y + 1.0f32);
-    return Vector3::new(1f32 - t, 1f32 - t, 1f32 - t)
-        + Vector3::new((t * 138f32 / 255f32), (t * 188f32 / 255f32), t);
+    return Vector3::new(
+        (1f32 - t) + (t * 138f32 / 255f32),
+        (1f32 - t) + (t * 188f32 / 255f32),
+        1f32,
+    );
 }
