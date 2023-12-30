@@ -43,14 +43,17 @@ impl RayCamera {
     ) -> Ray {
         let mut rng = rand::thread_rng();
 
-        let adjacent = Vector3::new(0f32, 1f32, 0f32)
-            .cross(self.direction)
-            .normalized()
-            .scale_by(
-                (self.viewport_size.x)
-                    * (screen_x as f32 + rng.gen_range(-0.5f32..0.5f32) / screen_width as f32),
-            );
-        let local_up = adjacent.cross(self.direction).normalized().scale_by(
+        let mut adjacent = Vector3::new(0f32, 1f32, 0f32)
+            .cross(self.direction);
+        //adjacent.normalize();
+        adjacent.scale(
+            (self.viewport_size.x)
+                * (screen_x as f32 + rng.gen_range(-0.5f32..0.5f32) / screen_width as f32),
+        );
+        
+        let mut local_up = adjacent.cross(self.direction);
+        //local_up.normalize();
+        local_up.scale(
             (self.viewport_size.y)
                 * (screen_y as f32 + rng.gen_range(-0.5f32..0.5f32) / screen_height as f32),
         );
@@ -80,7 +83,7 @@ impl Ray {
     pub fn new(origin: Vector3, direction: Vector3) -> Self {
         return Self {
             origin,
-            direction: direction.normalized(),
+            direction: direction,
         };
     }
 

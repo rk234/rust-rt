@@ -1,5 +1,3 @@
-use std::time::Instant;
-
 use raylib::prelude::*;
 use rendering::{RayCamera, Framebuffer, Renderer};
 use scene::Scene;
