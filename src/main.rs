@@ -28,13 +28,13 @@ fn main() {
             }
         }
         let tex = rl.load_texture_from_image(&thread, &img).expect("Failed to load");
-
+        let fps = rl.get_fps();
 
         let mut d: RaylibDrawHandle<'_> = rl.begin_drawing(&thread);
         d.clear_background(Color::WHITE);
         
         d.draw_texture(&tex, 0, 0, Color::WHITE);
 
-        d.draw_text("Hello, world!", 12, 12, 20, Color::BLACK);
+        d.draw_text(format!("FPS: {}", fps).as_str(), 12, 12, 20, Color::BLACK);
     }
 }
