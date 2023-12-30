@@ -10,3 +10,5 @@ edition = "2021"
 version = "4.5.0"
 git = "https://github.com/litten2up/raylib-rs"
 branch = "4.5.0"
+[dependencies.rand]
+rand = "0.8.5"
