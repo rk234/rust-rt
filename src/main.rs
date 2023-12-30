@@ -6,14 +6,17 @@ use scene::Scene;
 mod rendering;
 mod scene;
 fn main() {
+    const WIDTH: i32 = 16*480/9;
+    const HEIGHT: i32 = 480;
+
     let (mut rl, thread) = raylib::init()
-        .size(640, 480)
+        .size(WIDTH, HEIGHT)
         .title("Hello, World")
         .build();
-    let img = Image::gen_image_color(640, 480, Color::RED);
+    let img = Image::gen_image_color(WIDTH, HEIGHT, Color::RED);
 
     let cam = RayCamera::new(Vector3::new(0f32, 0f32, 0f32));
-    let mut framebuf = Framebuffer::new(640, 480);
+    let mut framebuf = Framebuffer::new(WIDTH as usize, HEIGHT as usize);
     let scene = Scene::new();
     let mut renderer = Renderer::new(&scene, &cam);
 
@@ -23,7 +26,7 @@ fn main() {
     while !rl.window_should_close() {
 
         //let now = Instant::now();
-        renderer.render_full(640, 480, &mut framebuf, 1);
+        renderer.render_full(framebuf.width, framebuf.height, &mut framebuf, 1);
         tex.update_texture(&framebuf.to_bytes());
         //println!("Outer elapsed {}ms", now.elapsed().as_millis());
 

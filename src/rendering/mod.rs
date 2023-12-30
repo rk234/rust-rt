@@ -117,15 +117,11 @@ impl Framebuffer {
     }
 
     pub fn clear(&mut self) {
-        for i in 0..self.data.len() {
-            self.data[i] = Vector3::new(0f32, 0f32, 0f32);
-        }
+        self.data.iter_mut().for_each(|v| {*v = Vector3::new(0f32, 0f32, 0f32)});
     }
 
     pub fn normalize(&mut self, scale: f32) {
-        for i in 0..self.data.len() {
-            self.data[i] /= scale;
-        }
+        self.data.iter_mut().for_each(|v| {*v /= scale});
     }
 
     pub fn to_bytes(&self) -> Vec<u8> {
@@ -160,13 +156,14 @@ impl Renderer<'_> {
 
     pub fn render_sample(&mut self, width: usize, height: usize, frame_buffer: &mut Framebuffer) {
         //let now = Instant::now();
-
-        for y in 0..frame_buffer.height {
-            for x in 0..frame_buffer.width {
-                //println!("({}, {})", x, y);
-                let ray = self.camera.gen_primary_ray(x, y, width, height);
-                frame_buffer.accum_pixel(x, y, sky_color(ray));
-            }
+        let mut i = 0;
+        for pixel in frame_buffer.data.iter_mut() {
+            let x = i % width;
+            let y = i / width;
+            let ray = self.camera.gen_primary_ray(x, y, width, height);
+            *pixel += sky_color(ray);
+            
+            i+=1;
         }
         //println!("\tOuter Elapsed: {}", now.elapsed().as_micros());
 
