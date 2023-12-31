@@ -9,7 +9,7 @@ fn main() {
 
     let (mut rl, thread) = raylib::init()
         .size(WIDTH, HEIGHT)
-        .title("Hello, World")
+        .title("Rust Ray Tracing")
         .build();
     let img = Image::gen_image_color(WIDTH, HEIGHT, Color::RED);
 
