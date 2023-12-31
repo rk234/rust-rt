@@ -41,7 +41,7 @@ impl RayCamera {
         screen_width: usize,
         screen_height: usize,
     ) -> Ray {
-        //let mut rng = rand::thread_rng();
+        let mut rng = rand::thread_rng();
         let adjacent = Vector3::new(0f32, 1f32, 0f32)
             .cross(self.direction)
             .normalized();
@@ -53,11 +53,11 @@ impl RayCamera {
         let dir = bottom_left
             .add(adjacent.scale_by(
                 (self.viewport_size.x)
-                    * (screen_x as f32 /*+ rng.gen_range(-0.5f32..0.5f32)*/ / screen_width as f32),
+                    * ((screen_x as f32 + rng.gen_range(-0.5f32..0.5f32)) / screen_width as f32),
             ))
             .add(local_up.scale_by(
                 (self.viewport_size.y)
-                    * (screen_y as f32 /*+ rng.gen_range(-0.5f32..0.5f32)*/ / screen_height as f32),
+                    * ((screen_y as f32 + rng.gen_range(-0.5f32..0.5f32)) / screen_height as f32),
             ))
             .add(self.direction.scale_by(self.near_plane))
             .normalized();
