@@ -1,4 +1,4 @@
-use crate::scene::Scene;
+use crate::scene::{Scene, Sphere, SceneObject};
 use rand::Rng;
 use raylib::prelude::*;
 use std::{ops::Add, time::Instant};
@@ -41,42 +41,34 @@ impl RayCamera {
         screen_width: usize,
         screen_height: usize,
     ) -> Ray {
-        let mut rng = rand::thread_rng();
-
-        let mut adjacent = Vector3::new(0f32, 1f32, 0f32)
-            .cross(self.direction);
-        //adjacent.normalize();
-        adjacent.scale(
-            (self.viewport_size.x)
-                * (screen_x as f32 + rng.gen_range(-0.5f32..0.5f32) / screen_width as f32),
-        );
-        
-        let mut local_up = adjacent.cross(self.direction);
-        //local_up.normalize();
-        local_up.scale(
-            (self.viewport_size.y)
-                * (screen_y as f32 + rng.gen_range(-0.5f32..0.5f32) / screen_height as f32),
-        );
-
+        //let mut rng = rand::thread_rng();
+        let adjacent = Vector3::new(0f32, 1f32, 0f32)
+            .cross(self.direction)
+            .normalized();
+        let local_up = adjacent.cross(self.direction).normalized();
         let bottom_left = adjacent
             .scale_by(-self.viewport_size.x as f32 / 2f32)
             .add(local_up.scale_by(-self.viewport_size.y as f32 / 2f32));
-        let norm_dir = self.direction.scale_by(self.near_plane);
 
-        let dir = Vector3::new(
-            bottom_left.x + adjacent.x + local_up.x + norm_dir.x,
-            bottom_left.y + adjacent.y + local_up.y + norm_dir.y,
-            bottom_left.z + adjacent.z + local_up.z + norm_dir.z,
-        )
-        .normalized();
+        let dir = bottom_left
+            .add(adjacent.scale_by(
+                (self.viewport_size.x)
+                    * (screen_x as f32 /*+ rng.gen_range(-0.5f32..0.5f32)*/ / screen_width as f32),
+            ))
+            .add(local_up.scale_by(
+                (self.viewport_size.y)
+                    * (screen_y as f32 /*+ rng.gen_range(-0.5f32..0.5f32)*/ / screen_height as f32),
+            ))
+            .add(self.direction.scale_by(self.near_plane))
+            .normalized();
 
         return Ray::new(self.position, dir);
     }
 }
 
 pub struct Ray {
-    origin: Vector3,
-    direction: Vector3,
+    pub origin: Vector3,
+    pub direction: Vector3,
 }
 
 impl Ray {
@@ -128,27 +120,30 @@ impl Framebuffer {
     }
 
     pub fn to_bytes(&self) -> Vec<u8> {
-        let mut bytes: Vec<u8> = Vec::new();
+        let mut bytes: Vec<u8> = vec![0; self.width*self.height*4];
+        
+        let mut i = 0;
         for color in &self.data {
-            bytes.push((color.x * 255f32) as u8);
-            bytes.push((color.y * 255f32) as u8);
-            bytes.push((color.z * 255f32) as u8);
-            bytes.push(255);
+            bytes[i] = (color.x * 255f32) as u8;
+            bytes[i+1] = (color.y * 255f32) as u8;
+            bytes[i+2] = (color.z * 255f32) as u8;
+            bytes[i+3] = 255;
+            i+=4;
         }
 
-        return bytes.to_owned();
+        return bytes;
     }
 }
 
 pub struct Renderer<'a> {
     num_samples: u32,
     scene: &'a Scene,
-    camera: &'a RayCamera,
+    camera: &'a mut RayCamera,
     num_bounces: u32,
 }
 
 impl Renderer<'_> {
-    pub fn new<'a>(scene: &'a Scene, camera: &'a RayCamera) -> Renderer<'a> {
+    pub fn new<'a>(scene: &'a Scene, camera: &'a mut RayCamera) -> Renderer<'a> {
         return Renderer {
             num_samples: 0,
             scene,
@@ -159,12 +154,26 @@ impl Renderer<'_> {
 
     pub fn render_sample(&mut self, width: usize, height: usize, frame_buffer: &mut Framebuffer) {
         //let now = Instant::now();
+        self.camera.update_viewport(width, height);
         let mut i = 0;
         for pixel in frame_buffer.data.iter_mut() {
             let x = i % width;
             let y = i / width;
             let ray = self.camera.gen_primary_ray(x, y, width, height);
-            *pixel += sky_color(ray);
+            let sphere = Sphere {
+                position: Vector3::new(0f32, 0f32, 5f32),
+                radius: 2f32,
+                material: &RTMaterial {
+                    albedo: Vector3::new(1f32,0f32,0f32),
+                    emissive: false,
+                    roughness: 1f32
+                }
+            };
+            let hit = sphere.intersect(&ray);
+            match hit {
+                Some(hit_data) => *pixel += (hit_data.normal + Vector3::new(1f32,1f32,1f32))*0.5f32,
+                None => *pixel += sky_color(ray)
+            }
             
             i+=1;
         }
@@ -199,4 +208,10 @@ fn sky_color(ray: Ray) -> Vector3 {
         (1f32 - t) + (t * 188f32 / 255f32),
         1f32,
     );
+}
+
+pub struct RTMaterial {
+    pub albedo: Vector3,
+    pub emissive: bool,
+    pub roughness: f32
 }

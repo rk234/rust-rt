@@ -9,14 +9,14 @@ fn main() {
 
     let (mut rl, thread) = raylib::init()
         .size(WIDTH, HEIGHT)
-        .title("Hello, World")
+        .title("Rust Ray Tracing")
         .build();
     let img = Image::gen_image_color(WIDTH, HEIGHT, Color::RED);
 
-    let cam = RayCamera::new(Vector3::new(0f32, 0f32, 0f32));
+    let mut cam = RayCamera::new(Vector3::new(0f32, 0f32, 0f32));
     let mut framebuf = Framebuffer::new(WIDTH as usize, HEIGHT as usize);
     let scene = Scene::new();
-    let mut renderer = Renderer::new(&scene, &cam);
+    let mut renderer = Renderer::new(&scene, &mut cam);
 
     let mut tex = rl.load_texture_from_image(&thread, &img).expect("Failed to load");
 

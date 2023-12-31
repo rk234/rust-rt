@@ -1,4 +1,4 @@
-use crate::rendering::Ray;
+use crate::rendering::{Ray, RTMaterial};
 use raylib::prelude::*;
 
 pub struct Scene {
@@ -16,17 +16,63 @@ impl Scene {
         self.scene_objects.push(obj);
     }
 
-    pub fn update(&self) {
+    pub fn update(&self, dt: f32) {
         for obj in &self.scene_objects {
-            obj.update();
+            obj.update(dt);
         }
     }
 }
 
+pub struct HitData<'a> {
+    pub position: Vector3,
+    pub normal: Vector3,
+    pub material: &'a RTMaterial
+}
+
+impl HitData<'_> {
+    pub fn new(position: Vector3, normal: Vector3, material: &RTMaterial) -> HitData {
+        HitData { position, normal, material }
+    }
+}
+
 pub trait SceneObject {
-    fn intersect(&self, ray: Ray) -> Vector3 {
-        todo!()
+    fn intersect(&self, ray: &Ray) -> Option<HitData>;
+    fn material(&self) -> &RTMaterial;
+    fn update(&self, dt: f32);
+}
+
+pub struct Sphere<'a> {
+    pub position: Vector3,
+    pub radius: f32,
+    pub material: &'a RTMaterial
+}
+
+impl SceneObject for Sphere<'_> {
+    fn intersect(&self, ray: &Ray) -> Option<HitData> {
+        let l = ray.origin - self.position;
+        let a = 1f32;
+        let b = 2f32 * ray.direction.dot(l);
+        let c = l.dot(l) - self.radius*self.radius;
+        let disc = b*b - 4f32*a*c;
+
+        if disc > 0f32 {
+            let t = (-b+disc.sqrt()) / (2f32*a);
+            
+            if t > 0f32 {
+                Some(HitData::new(ray.at(t), (ray.at(t)-self.position).normalized(), self.material()))
+            } else {
+                None
+            }
+        } else {
+            None
+        }
     }
 
-    fn update(&self);  
+    fn material(&self) -> &RTMaterial {
+        return self.material;
+    }
+
+    fn update(&self, dt: f32) {
+        //todo!()
+    }
 }
