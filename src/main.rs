@@ -4,8 +4,9 @@ use scene::Scene;
 mod rendering;
 mod scene;
 fn main() {
-    const WIDTH: i32 = 16*480/9;
-    const HEIGHT: i32 = 480;
+    
+    const HEIGHT: i32 = 300;
+    const WIDTH: i32 = 16*HEIGHT/9;
 
     let (mut rl, thread) = raylib::init()
         .size(WIDTH, HEIGHT)
@@ -36,6 +37,6 @@ fn main() {
         d.clear_background(Color::WHITE);
         d.draw_texture(&tex, 0, 0, Color::WHITE);
 
-        d.draw_text(format!("FPS: {}; Frame time: {}", fps, dt).as_str(), 12, 12, 20, Color::BLACK);
+        d.draw_text(format!("FPS: {}; dt: {:.2}ms", fps, dt).as_str(), 12, 12, 20, Color::BLACK);
     }
 }
