@@ -24,8 +24,8 @@ fn main() {
     while !rl.window_should_close() {
 
         //let now = Instant::now();
-        renderer.render_full(framebuf.width, framebuf.height, &mut framebuf, 1);
-        tex.update_texture(&framebuf.to_bytes());
+        renderer.render_sample(framebuf.width, framebuf.height, &mut framebuf);
+        tex.update_texture(&framebuf.to_bytes_s(renderer.num_samples as f32));
         //println!("Outer elapsed {}ms", now.elapsed().as_millis());
 
 

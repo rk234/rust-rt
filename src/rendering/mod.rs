@@ -120,13 +120,17 @@ impl Framebuffer {
     }
 
     pub fn to_bytes(&self) -> Vec<u8> {
+        return self.to_bytes_s(1f32);
+    }
+
+    pub fn to_bytes_s(&self, scale: f32) -> Vec<u8>{
         let mut bytes: Vec<u8> = vec![0; self.width*self.height*4];
         
         let mut i = 0;
         for color in &self.data {
-            bytes[i] = (color.x * 255f32) as u8;
-            bytes[i+1] = (color.y * 255f32) as u8;
-            bytes[i+2] = (color.z * 255f32) as u8;
+            bytes[i] = (color.x * 255f32/scale) as u8;
+            bytes[i+1] = (color.y * 255f32/scale) as u8;
+            bytes[i+2] = (color.z * 255f32/scale) as u8;
             bytes[i+3] = 255;
             i+=4;
         }
@@ -136,7 +140,7 @@ impl Framebuffer {
 }
 
 pub struct Renderer<'a> {
-    num_samples: u32,
+    pub num_samples: u32,
     scene: &'a Scene,
     camera: &'a mut RayCamera,
     num_bounces: u32,
