@@ -56,8 +56,9 @@ impl SceneObject for Sphere<'_> {
         let disc = b*b - 4f32*a*c;
 
         if disc > 0f32 {
-            let t = (-b+disc.sqrt()) / (2f32*a);
-            
+            let t0 = (-b+disc.sqrt()) / (2f32*a);
+            let t1 = (-b-disc.sqrt()) / (2f32*a);
+            let t = if t0 > t1 {t0} else {t1};
             if t > 0f32 {
                 Some(HitData::new(ray.at(t), (ray.at(t)-self.position).normalized(), self.material()))
             } else {
