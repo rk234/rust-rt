@@ -1,22 +1,31 @@
 use raylib::prelude::*;
 use rendering::{RayCamera, Framebuffer, Renderer};
 use scene::Scene;
+
+use crate::{scene::Sphere, rendering::{RTMaterial, LambertianMaterial}};
 mod rendering;
 mod scene;
+mod utils;
+
 fn main() {
-    
     const HEIGHT: i32 = 300;
     const WIDTH: i32 = 16*HEIGHT/9;
 
     let (mut rl, thread) = raylib::init()
         .size(WIDTH, HEIGHT)
+        .resizable()
         .title("Rust Ray Tracing")
         .build();
+
     let img = Image::gen_image_color(WIDTH, HEIGHT, Color::RED);
 
     let mut cam = RayCamera::new(Vector3::new(0f32, 0f32, 0f32));
     let mut framebuf = Framebuffer::new(WIDTH as usize, HEIGHT as usize);
-    let scene = Scene::new();
+    let mut scene = Scene::new();
+    
+    let mat = LambertianMaterial::new(Vector3::new(0f32, 0.5f32, 0f32));
+    scene.add_object(Box::new(Sphere::new(Vector3::new(0f32, 0f32, 5f32), 3f32, &mat)));
+
     let mut renderer = Renderer::new(&scene, &mut cam);
 
     let mut tex = rl.load_texture_from_image(&thread, &img).expect("Failed to load");

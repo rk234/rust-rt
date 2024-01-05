@@ -21,30 +21,59 @@ impl Scene {
             obj.update(dt);
         }
     }
+
+    pub fn intersect(&self, ray: &Ray) -> Option<HitData> {
+        let mut hit_data: Option<HitData> = None;
+        let mut min_hit_dist: f32 = 10e9f32;
+        for obj in &self.scene_objects {
+            match obj.intersect(ray) {
+                Some(data) => {
+                    let dist = data.position.distance_to(ray.origin);
+                    if dist < min_hit_dist {
+                        hit_data = Some(data);
+                        min_hit_dist = dist;
+                    }
+                }
+                None => continue
+            }
+        }
+
+        return hit_data;
+    }
 }
 
 pub struct HitData<'a> {
     pub position: Vector3,
     pub normal: Vector3,
-    pub material: &'a RTMaterial
+    pub material: &'a dyn RTMaterial
 }
 
 impl HitData<'_> {
-    pub fn new(position: Vector3, normal: Vector3, material: &RTMaterial) -> HitData {
+    pub fn new(position: Vector3, normal: Vector3, material: &dyn RTMaterial) -> HitData {
         HitData { position, normal, material }
     }
 }
 
 pub trait SceneObject {
     fn intersect(&self, ray: &Ray) -> Option<HitData>;
-    fn material(&self) -> &RTMaterial;
+    fn material(&self) -> &dyn RTMaterial;
     fn update(&self, dt: f32);
 }
 
 pub struct Sphere<'a> {
     pub position: Vector3,
     pub radius: f32,
-    pub material: &'a RTMaterial
+    pub material: &'a dyn RTMaterial
+}
+
+impl Sphere<'_> {
+    pub fn new(position: Vector3, radius: f32, material: &dyn RTMaterial) -> Sphere {
+        return Sphere {
+            position,
+            radius,
+            material
+        }
+    }
 }
 
 impl SceneObject for Sphere<'_> {
@@ -69,7 +98,7 @@ impl SceneObject for Sphere<'_> {
         }
     }
 
-    fn material(&self) -> &RTMaterial {
+    fn material(&self) -> &dyn RTMaterial {
         return self.material;
     }
 

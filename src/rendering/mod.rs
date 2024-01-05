@@ -1,4 +1,4 @@
-use crate::scene::{Scene, Sphere, SceneObject};
+use crate::{scene::{Scene, Sphere, SceneObject, HitData}, utils::rand_in_hemisphere};
 use rand::Rng;
 use raylib::prelude::*;
 use std::{ops::Add, time::Instant};
@@ -164,16 +164,8 @@ impl Renderer<'_> {
             let x = i % width;
             let y = i / width;
             let ray = self.camera.gen_primary_ray(x, y, width, height);
-            let sphere = Sphere {
-                position: Vector3::new(0f32, 0f32, 5f32),
-                radius: 2f32,
-                material: &RTMaterial {
-                    albedo: Vector3::new(1f32,0f32,0f32),
-                    emissive: false,
-                    roughness: 1f32
-                }
-            };
-            let hit = sphere.intersect(&ray);
+            
+            let hit = self.scene.intersect(&ray);
             match hit {
                 Some(hit_data) => *pixel += (hit_data.normal + Vector3::new(1f32,1f32,1f32))*0.5f32,
                 None => *pixel += sky_color(ray)
@@ -214,8 +206,27 @@ fn sky_color(ray: Ray) -> Vector3 {
     );
 }
 
-pub struct RTMaterial {
-    pub albedo: Vector3,
-    pub emissive: bool,
-    pub roughness: f32
+pub trait RTMaterial {
+    fn attenuation(&self, in_ray: &Ray, hit: HitData) -> Vector3;
+    fn scatter(&self, in_ray: &Ray, hit: HitData) -> Option<Ray>;
+}
+
+pub struct LambertianMaterial {
+    albedo: Vector3,
+}
+
+impl LambertianMaterial {
+    pub fn new(albedo: Vector3) -> LambertianMaterial {
+        return LambertianMaterial { albedo }
+    }
+}
+
+impl RTMaterial for LambertianMaterial {
+    fn attenuation(&self, in_ray: &Ray, hit: HitData) -> Vector3 {
+        return self.albedo;
+    }
+
+    fn scatter(&self, in_ray: &Ray, hit: HitData) -> Option<Ray> {
+        return Some(Ray::new(hit.position, hit.normal + rand_in_hemisphere(hit.normal)))
+    }
 }
