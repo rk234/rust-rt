@@ -11,6 +11,7 @@ mod utils;
 fn main() {
     const HEIGHT: i32 = 500;
     const WIDTH: i32 = 16*HEIGHT/9;
+    const RES_SCALE: f32 = 0.7f32;
 
     let (mut rl, thread) = raylib::init()
         .size(WIDTH, HEIGHT)
@@ -33,7 +34,18 @@ fn main() {
     let mut tex = rl.load_texture_from_image(&thread, &img).expect("Failed to load");
 
     rl.set_target_fps(60);
+    let mut prev_s_width = rl.get_screen_width();
+    let mut prev_s_height = rl.get_screen_height();
+
     while !rl.window_should_close() {
+        let s_width = rl.get_screen_width();
+        let s_height = rl.get_screen_height();
+
+        if s_width != prev_s_width || s_height != prev_s_height {
+            framebuf = Framebuffer::new((s_width as f32 * RES_SCALE) as usize, (s_height as f32 *RES_SCALE) as usize);
+            tex = rl.load_texture_from_image(&thread, &Image::gen_image_color(framebuf.width as i32, framebuf.height as i32, Color::BLACK)).expect("Failed to allocate texture");
+            renderer.reset();
+        }
 
         //let now = Instant::now();
         renderer.render_sample(framebuf.width, framebuf.height, &mut framebuf);
@@ -43,11 +55,16 @@ fn main() {
 
         let fps = rl.get_fps();
         let dt = rl.get_frame_time() * 1000f32;
+        
 
         let mut d: RaylibDrawHandle<'_> = rl.begin_drawing(&thread);
         d.clear_background(Color::WHITE);
-        d.draw_texture(&tex, 0, 0, Color::WHITE);
+        //d.draw_texture(&tex, 0, 0, Color::WHITE);
+        d.draw_texture_pro(&tex, Rectangle::new(0f32, 0f32, framebuf.width as f32, framebuf.height as f32), Rectangle::new(0f32,0f32, s_width as f32, s_height as f32), Vector2::new(0f32, 0f32), 0f32, Color::WHITE);
 
         d.draw_text(format!("FPS: {}; dt: {:.2}ms", fps, dt).as_str(), 12, 12, 20, Color::BLACK);
+        
+        prev_s_width = s_width;
+        prev_s_height = s_height;
     }
 }

@@ -1,5 +1,5 @@
 use rand::Rng;
-use raylib::prelude::{Vector3};
+use raylib::prelude::Vector3;
 
 
 pub fn rand_vec3() -> Vector3 {

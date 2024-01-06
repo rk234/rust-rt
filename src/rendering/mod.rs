@@ -156,7 +156,15 @@ impl Renderer<'_> {
         };
     }
 
+    pub fn reset(&mut self) {
+        self.num_samples = 0;
+    }
+
     pub fn render_sample(&mut self, width: usize, height: usize, frame_buffer: &mut Framebuffer) {
+        if self.num_samples > 100 {
+            return;
+        }
+
         self.camera.update_viewport(width, height);
         let mut i = 0;
         for pixel in frame_buffer.data.iter_mut() {
