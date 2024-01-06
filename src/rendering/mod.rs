@@ -1,9 +1,9 @@
-use crate::{scene::{Scene, Sphere, SceneObject, HitData}, utils::rand_in_hemisphere};
+use crate::{scene::Scene, utils::rand_in_hemisphere};
 use rand::Rng;
 use raylib::prelude::*;
-use std::{ops::Add, time::Instant};
+use std::ops::Add;
 
-pub const EPSILON: f32 = 0.00001f32;
+pub const EPSILON: f32 = 0.0001f32;
 
 pub struct RayCamera {
     position: Vector3,
@@ -157,7 +157,6 @@ impl Renderer<'_> {
     }
 
     pub fn render_sample(&mut self, width: usize, height: usize, frame_buffer: &mut Framebuffer) {
-        //let now = Instant::now();
         self.camera.update_viewport(width, height);
         let mut i = 0;
         for pixel in frame_buffer.data.iter_mut() {
@@ -165,17 +164,36 @@ impl Renderer<'_> {
             let y = i / width;
             let ray = self.camera.gen_primary_ray(x, y, width, height);
             
-            let hit = self.scene.intersect(&ray);
-            match hit {
-                Some(hit_data) => *pixel += (hit_data.normal + Vector3::new(1f32,1f32,1f32))*0.5f32,
-                None => *pixel += sky_color(ray)
-            }
+            *pixel += self.cast(ray, self.num_bounces as i32);
             
             i+=1;
         }
-        //println!("\tOuter Elapsed: {}", now.elapsed().as_micros());
 
         self.num_samples += 1;
+    }
+
+    fn cast(&self, ray: Ray, depth: i32)  -> Vector3 {
+        if depth < 0 {
+            return Vector3::new(0f32, 0f32, 0f32);
+        }
+
+        let hit = self.scene.intersect(&ray);
+        match hit {
+            Some(hit_data) => {
+                let material = hit_data.material;
+                let position = hit_data.position;
+                let normal = hit_data.normal;
+
+                let scatter = material.scatter(ray, position + (normal*EPSILON), normal);
+                let attenuation = material.attenuation(position, normal);
+                
+                match scatter {
+                    Some(scatter_ray) => return attenuation * self.cast(scatter_ray, depth-1),
+                    None => return Vector3::new(0f32,0f32,0f32)
+                }
+            },
+            None => return sky_color(ray)
+        }
     }
 
     pub fn render_full(
@@ -207,8 +225,8 @@ fn sky_color(ray: Ray) -> Vector3 {
 }
 
 pub trait RTMaterial {
-    fn attenuation(&self, in_ray: &Ray, hit: HitData) -> Vector3;
-    fn scatter(&self, in_ray: &Ray, hit: HitData) -> Option<Ray>;
+    fn attenuation(&self, position: Vector3, normal: Vector3) -> Vector3;
+    fn scatter(&self, in_ray: Ray, position: Vector3, normal: Vector3) -> Option<Ray>;
 }
 
 pub struct LambertianMaterial {
@@ -222,11 +240,11 @@ impl LambertianMaterial {
 }
 
 impl RTMaterial for LambertianMaterial {
-    fn attenuation(&self, in_ray: &Ray, hit: HitData) -> Vector3 {
+    fn attenuation(&self, _: Vector3, _: Vector3) -> Vector3 {
         return self.albedo;
     }
 
-    fn scatter(&self, in_ray: &Ray, hit: HitData) -> Option<Ray> {
-        return Some(Ray::new(hit.position, hit.normal + rand_in_hemisphere(hit.normal)))
+    fn scatter(&self, _: Ray, position: Vector3, normal: Vector3) -> Option<Ray> {
+        return Some(Ray::new(position, normal + rand_in_hemisphere(normal)))
     }
 }

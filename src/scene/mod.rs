@@ -89,7 +89,7 @@ impl SceneObject for Sphere {
         if disc > 0f32 {
             let t0 = (-b+disc.sqrt()) / (2f32*a);
             let t1 = (-b-disc.sqrt()) / (2f32*a);
-            let t = if t0 > t1 {t0} else {t1};
+            let t = if t0 < t1 {t0} else {t1};
             if t > 0f32 {
                 Some(HitData::new(ray.at(t), (ray.at(t)-self.position).normalized(), self.material()))
             } else {
@@ -104,7 +104,7 @@ impl SceneObject for Sphere {
         return Rc::clone(&self.material);
     }
 
-    fn update(&self, dt: f32) {
+    fn update(&self, _: f32) {
         //todo!()
     }
 }
