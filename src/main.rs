@@ -1,6 +1,7 @@
 use raylib::prelude::*;
 use rendering::{RayCamera, Framebuffer, Renderer};
 use scene::Scene;
+use std::rc::Rc;
 
 use crate::{scene::Sphere, rendering::{RTMaterial, LambertianMaterial}};
 mod rendering;
@@ -23,8 +24,8 @@ fn main() {
     let mut framebuf = Framebuffer::new(WIDTH as usize, HEIGHT as usize);
     let mut scene = Scene::new();
     
-    let mat = LambertianMaterial::new(Vector3::new(0f32, 0.5f32, 0f32));
-    scene.add_object(Box::new(Sphere::new(Vector3::new(0f32, 0f32, 5f32), 3f32, &mat)));
+    let mat: Rc<dyn RTMaterial> = Rc::new(LambertianMaterial::new(Vector3::new(0f32, 0.5f32, 0f32)));
+    scene.add_object(Box::new(Sphere::new(Vector3::new(0f32, 0f32, 5f32), 3f32, Rc::clone(&mat))));
 
     let mut renderer = Renderer::new(&scene, &mut cam);
 

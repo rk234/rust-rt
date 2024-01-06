@@ -1,3 +1,5 @@
+use std::rc::Rc;
+
 use crate::rendering::{Ray, RTMaterial};
 use raylib::prelude::*;
 
@@ -42,32 +44,32 @@ impl Scene {
     }
 }
 
-pub struct HitData<'a> {
+pub struct HitData {
     pub position: Vector3,
     pub normal: Vector3,
-    pub material: &'a dyn RTMaterial
+    pub material: Rc<dyn RTMaterial>
 }
 
-impl HitData<'_> {
-    pub fn new(position: Vector3, normal: Vector3, material: &dyn RTMaterial) -> HitData {
+impl HitData {
+    pub fn new(position: Vector3, normal: Vector3, material: Rc<dyn RTMaterial>) -> HitData {
         HitData { position, normal, material }
     }
 }
 
 pub trait SceneObject {
     fn intersect(&self, ray: &Ray) -> Option<HitData>;
-    fn material(&self) -> &dyn RTMaterial;
+    fn material(&self) -> Rc<dyn RTMaterial>;
     fn update(&self, dt: f32);
 }
 
-pub struct Sphere<'a> {
+pub struct Sphere {
     pub position: Vector3,
     pub radius: f32,
-    pub material: &'a dyn RTMaterial
+    pub material: Rc<dyn RTMaterial>
 }
 
-impl Sphere<'_> {
-    pub fn new(position: Vector3, radius: f32, material: &dyn RTMaterial) -> Sphere {
+impl Sphere {
+    pub fn new(position: Vector3, radius: f32, material: Rc<dyn RTMaterial>) -> Sphere {
         return Sphere {
             position,
             radius,
@@ -76,7 +78,7 @@ impl Sphere<'_> {
     }
 }
 
-impl SceneObject for Sphere<'_> {
+impl SceneObject for Sphere {
     fn intersect(&self, ray: &Ray) -> Option<HitData> {
         let l = ray.origin - self.position;
         let a = 1f32;
@@ -98,8 +100,8 @@ impl SceneObject for Sphere<'_> {
         }
     }
 
-    fn material(&self) -> &dyn RTMaterial {
-        return self.material;
+    fn material(&self) -> Rc<dyn RTMaterial> {
+        return Rc::clone(&self.material);
     }
 
     fn update(&self, dt: f32) {
