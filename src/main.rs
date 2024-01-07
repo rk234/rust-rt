@@ -11,7 +11,7 @@ mod utils;
 fn main() {
     const HEIGHT: i32 = 500;
     const WIDTH: i32 = 16*HEIGHT/9;
-    const RES_SCALE: f32 = 1f32;
+    let mut res_scale: f32 = 0.8f32;
 
     let (mut rl, thread) = raylib::init()
         .size(WIDTH, HEIGHT)
@@ -32,7 +32,7 @@ fn main() {
 
     scene.add_object(Box::new(Sphere::new(Vector3::new(0f32, 3f32, 10f32), 3f32, Rc::clone(&diffuse_mat))));
     scene.add_object(Box::new(Sphere::new(Vector3::new(13f32, 15f32, 10f32), 3f32, Rc::clone(&emissive_mat))));
-    scene.add_object(Box::new(Sphere::new(Vector3::new(0f32, -100f32, 10f32), 100f32, Rc::clone(&diffuse_mat))));
+    scene.add_object(Box::new(Sphere::new(Vector3::new(0f32, -1000f32, 10f32), 1000f32, Rc::clone(&diffuse_mat))));
 
     let mut renderer = Renderer::new(&scene, &mut cam);
 
@@ -41,13 +41,14 @@ fn main() {
     rl.set_target_fps(60);
     let mut prev_s_width = rl.get_screen_width();
     let mut prev_s_height = rl.get_screen_height();
+    let mut prev_scale: f32 = res_scale;
 
     while !rl.window_should_close() {
         let s_width = rl.get_screen_width();
         let s_height = rl.get_screen_height();
 
         if s_width != prev_s_width || s_height != prev_s_height {
-            framebuf = Framebuffer::new((s_width as f32 * RES_SCALE) as usize, (s_height as f32 *RES_SCALE) as usize);
+            framebuf = Framebuffer::new((s_width as f32 * res_scale) as usize, (s_height as f32 * res_scale) as usize);
             tex = rl.load_texture_from_image(&thread, &Image::gen_image_color(framebuf.width as i32, framebuf.height as i32, Color::BLACK)).expect("Failed to allocate texture");
             renderer.reset();
         }
@@ -74,6 +75,8 @@ fn main() {
             renderer.reset();
             framebuf.clear();
         }
+        d.gui_slider_bar(Rectangle::new(100f32, (s_height-20) as f32, 200f32, 20f32), None, None, 0.8f32, 0.01f32, 1f32);
+        
         prev_s_width = s_width;
         prev_s_height = s_height;
     }
