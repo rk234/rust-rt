@@ -1,7 +1,7 @@
 use raylib::prelude::*;
 use rendering::{RayCamera, Framebuffer, Renderer};
 use scene::Scene;
-use std::rc::Rc;
+use std::{rc::Rc, ffi::CString};
 
 use crate::{scene::Sphere, rendering::{RTMaterial, LambertianMaterial}};
 mod rendering;
@@ -18,6 +18,8 @@ fn main() {
         .resizable()
         .title("Rust Ray Tracing")
         .build();
+
+    rl.gui_enable();
 
     let img = Image::gen_image_color(WIDTH, HEIGHT, Color::RED);
 
@@ -58,12 +60,16 @@ fn main() {
         
 
         let mut d: RaylibDrawHandle<'_> = rl.begin_drawing(&thread);
+
         d.clear_background(Color::WHITE);
         //d.draw_texture(&tex, 0, 0, Color::WHITE);
         d.draw_texture_pro(&tex, Rectangle::new(0f32, 0f32, framebuf.width as f32, framebuf.height as f32), Rectangle::new(0f32,0f32, s_width as f32, s_height as f32), Vector2::new(0f32, 0f32), 0f32, Color::WHITE);
 
-        d.draw_text(format!("FPS: {}; dt: {:.2}ms", fps, dt).as_str(), 12, 12, 20, Color::BLACK);
+        d.draw_text(format!("FPS: {}; dt: {:.2}ms; samples: {}", fps, dt, renderer.num_samples).as_str(), 12, 12, 20, Color::BLACK);
         
+        if d.gui_button(Rectangle::new(0f32,(s_height-50) as f32, 100f32, 50f32), Some(CString::new("Hello World").unwrap().as_c_str())) {
+            println!("Pressed!");
+        }
         prev_s_width = s_width;
         prev_s_height = s_height;
     }
