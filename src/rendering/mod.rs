@@ -194,13 +194,20 @@ impl Renderer<'_> {
 
                 let scatter = material.scatter(ray, position + (normal*EPSILON), normal);
                 let attenuation = material.attenuation(position, normal);
+                let emissive = material.emissive(position, normal);
                 
                 match scatter {
                     Some(scatter_ray) => return attenuation * self.cast(scatter_ray, depth-1),
-                    None => return Vector3::new(0f32,0f32,0f32)
+                    None => {
+                        if emissive {
+                            return attenuation;
+                        } else {
+                            return Vector3::new(0f32,0f32,0f32)
+                        }
+                    }
                 }
             },
-            None => return sky_color(ray)
+            None => return Vector3::new(0f32,0f32,0f32)
         }
     }
 
@@ -235,6 +242,7 @@ fn sky_color(ray: Ray) -> Vector3 {
 pub trait RTMaterial {
     fn attenuation(&self, position: Vector3, normal: Vector3) -> Vector3;
     fn scatter(&self, in_ray: Ray, position: Vector3, normal: Vector3) -> Option<Ray>;
+    fn emissive(&self, position: Vector3, normal: Vector3) -> bool;
 }
 
 pub struct LambertianMaterial {
@@ -254,5 +262,33 @@ impl RTMaterial for LambertianMaterial {
 
     fn scatter(&self, _: Ray, position: Vector3, normal: Vector3) -> Option<Ray> {
         return Some(Ray::new(position, normal + rand_in_hemisphere(normal)))
+    }
+
+    fn emissive(&self, _: Vector3, _: Vector3) -> bool {
+        false
+    }
+}
+
+pub struct EmissiveMaterial {
+    emit: Vector3
+}
+
+impl EmissiveMaterial {
+    pub fn new(emit: Vector3) -> EmissiveMaterial {
+        return EmissiveMaterial { emit }
+    }
+}
+
+impl RTMaterial for EmissiveMaterial {
+    fn attenuation(&self, _: Vector3, _: Vector3) -> Vector3 {
+        self.emit
+    }
+
+    fn scatter(&self, _: Ray, _: Vector3, _: Vector3) -> Option<Ray> {
+        None
+    }
+
+    fn emissive(&self, _: Vector3, _: Vector3) -> bool {
+        true
     }
 }
