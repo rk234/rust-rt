@@ -1,4 +1,4 @@
-use std::rc::Rc;
+use std::sync::Arc;
 
 use crate::rendering::{Ray, RTMaterial};
 use raylib::prelude::*;
@@ -47,29 +47,29 @@ impl Scene {
 pub struct HitData {
     pub position: Vector3,
     pub normal: Vector3,
-    pub material: Rc<dyn RTMaterial>
+    pub material: Arc<dyn RTMaterial>
 }
 
 impl HitData {
-    pub fn new(position: Vector3, normal: Vector3, material: Rc<dyn RTMaterial>) -> HitData {
+    pub fn new(position: Vector3, normal: Vector3, material: Arc<dyn RTMaterial>) -> HitData {
         HitData { position, normal, material }
     }
 }
 
-pub trait SceneObject {
+pub trait SceneObject: Send + Sync {
     fn intersect(&self, ray: &Ray) -> Option<HitData>;
-    fn material(&self) -> Rc<dyn RTMaterial>;
+    fn material(&self) -> Arc<dyn RTMaterial>;
     fn update(&self, dt: f32);
 }
 
 pub struct Sphere {
     pub position: Vector3,
     pub radius: f32,
-    pub material: Rc<dyn RTMaterial>
+    pub material: Arc<dyn RTMaterial>
 }
 
 impl Sphere {
-    pub fn new(position: Vector3, radius: f32, material: Rc<dyn RTMaterial>) -> Sphere {
+    pub fn new(position: Vector3, radius: f32, material: Arc<dyn RTMaterial>) -> Sphere {
         return Sphere {
             position,
             radius,
@@ -100,11 +100,19 @@ impl SceneObject for Sphere {
         }
     }
 
-    fn material(&self) -> Rc<dyn RTMaterial> {
-        return Rc::clone(&self.material);
+    fn material(&self) -> Arc<dyn RTMaterial> {
+        return Arc::clone(&self.material);
     }
 
     fn update(&self, _: f32) {
         //todo!()
     }
+}
+
+struct Plane {
+    postion: Vector3,
+    normal: Vector3
+}
+
+impl Plane {
 }

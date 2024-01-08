@@ -1,7 +1,7 @@
 use raylib::prelude::*;
 use rendering::{RayCamera, Framebuffer, Renderer};
 use scene::Scene;
-use std::{rc::Rc, ffi::CString};
+use std::{rc::Rc, ffi::CString, sync::Arc};
 
 use crate::{scene::Sphere, rendering::{RTMaterial, LambertianMaterial, EmissiveMaterial}};
 mod rendering;
@@ -27,12 +27,13 @@ fn main() {
     let mut framebuf = Framebuffer::new(WIDTH as usize, HEIGHT as usize);
     let mut scene = Scene::new();
     
-    let diffuse_mat: Rc<dyn RTMaterial> = Rc::new(LambertianMaterial::new(Vector3::new(0.8f32, 0.8f32, 0.8f32)));
-    let emissive_mat: Rc<dyn RTMaterial> = Rc::new(EmissiveMaterial::new(Vector3::new(1.7f32, 1.7f32, 1.7f32)));
+    let white_diffuse_mat: Arc<dyn RTMaterial> = Arc::new(LambertianMaterial::new(Vector3::new(0.8f32, 0.8f32, 0.8f32)));
+    let red_diffuse_mat: Arc<dyn RTMaterial> = Arc::new(LambertianMaterial::new(Vector3::new(0.8f32, 0f32, 0f32)));
+    let emissive_mat: Arc<dyn RTMaterial> = Arc::new(EmissiveMaterial::new(Vector3::new(1.7f32, 1.7f32, 1.7f32)));
 
-    scene.add_object(Box::new(Sphere::new(Vector3::new(0f32, 3f32, 10f32), 3f32, Rc::clone(&diffuse_mat))));
-    scene.add_object(Box::new(Sphere::new(Vector3::new(13f32, 15f32, 10f32), 3f32, Rc::clone(&emissive_mat))));
-    scene.add_object(Box::new(Sphere::new(Vector3::new(0f32, -1000f32, 10f32), 1000f32, Rc::clone(&diffuse_mat))));
+    scene.add_object(Box::new(Sphere::new(Vector3::new(0f32, 3f32, 10f32), 3f32, Arc::clone(&white_diffuse_mat))));
+    scene.add_object(Box::new(Sphere::new(Vector3::new(13f32, 15f32, 10f32), 3f32, Arc::clone(&emissive_mat))));
+    scene.add_object(Box::new(Sphere::new(Vector3::new(0f32, -1000f32, 10f32), 1000f32, Arc::clone(&red_diffuse_mat))));
 
     let mut renderer = Renderer::new(&scene, &mut cam);
 
@@ -51,6 +52,14 @@ fn main() {
             framebuf = Framebuffer::new((s_width as f32 * res_scale) as usize, (s_height as f32 * res_scale) as usize);
             tex = rl.load_texture_from_image(&thread, &Image::gen_image_color(framebuf.width as i32, framebuf.height as i32, Color::BLACK)).expect("Failed to allocate texture");
             renderer.reset();
+        }
+
+        
+        if prev_scale != res_scale  {
+            framebuf = Framebuffer::new((s_width as f32 * res_scale) as usize, (s_height as f32 * res_scale) as usize);
+            tex = rl.load_texture_from_image(&thread, &Image::gen_image_color(framebuf.width as i32, framebuf.height as i32, Color::BLACK)).expect("Failed to allocate texture");
+            renderer.reset();
+            prev_scale = res_scale;
         }
 
         //let now = Instant::now();
@@ -75,8 +84,8 @@ fn main() {
             renderer.reset();
             framebuf.clear();
         }
-        d.gui_slider_bar(Rectangle::new(100f32, (s_height-20) as f32, 200f32, 20f32), None, None, 0.8f32, 0.01f32, 1f32);
-        
+        res_scale = d.gui_slider_bar(Rectangle::new(100f32, (s_height-20) as f32, 200f32, 20f32), None, None, res_scale, 0.01f32, 1f32);
+       
         prev_s_width = s_width;
         prev_s_height = s_height;
     }

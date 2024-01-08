@@ -2,6 +2,7 @@ use crate::{scene::Scene, utils::rand_in_hemisphere};
 use rand::Rng;
 use raylib::prelude::*;
 use std::ops::Add;
+use rayon::prelude::*;
 
 pub const EPSILON: f32 = 0.0001f32;
 
@@ -161,21 +162,15 @@ impl Renderer<'_> {
     }
 
     pub fn render_sample(&mut self, width: usize, height: usize, frame_buffer: &mut Framebuffer) {
-        if self.num_samples > 100 {
-            return;
-        }
-
         self.camera.update_viewport(width, height);
-        let mut i = 0;
-        for pixel in frame_buffer.data.iter_mut() {
+        //let mut i = 0;
+        frame_buffer.data.par_iter_mut().enumerate().for_each(|(i, pixel)| {
             let x = i % width;
             let y = i / width;
             let ray = self.camera.gen_primary_ray(x, y, width, height);
             
             *pixel += self.cast(ray, self.num_bounces as i32);
-            
-            i+=1;
-        }
+        });
 
         self.num_samples += 1;
     }
@@ -207,7 +202,7 @@ impl Renderer<'_> {
                     }
                 }
             },
-            None => return Vector3::new(0f32,0f32,0f32)
+            None => return sky_color(ray)
         }
     }
 
@@ -239,7 +234,7 @@ fn sky_color(ray: Ray) -> Vector3 {
     );
 }
 
-pub trait RTMaterial {
+pub trait RTMaterial: Send + Sync {
     fn attenuation(&self, position: Vector3, normal: Vector3) -> Vector3;
     fn scatter(&self, in_ray: Ray, position: Vector3, normal: Vector3) -> Option<Ray>;
     fn emissive(&self, position: Vector3, normal: Vector3) -> bool;
