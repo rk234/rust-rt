@@ -1,7 +1,7 @@
 use raylib::prelude::*;
 use rendering::{RayCamera, Framebuffer, Renderer};
 use scene::Scene;
-use std::{rc::Rc, ffi::CString, sync::Arc};
+use std::{ffi::CString, sync::Arc};
 
 use crate::{scene::Sphere, rendering::{RTMaterial, LambertianMaterial, EmissiveMaterial}};
 mod rendering;
@@ -28,7 +28,7 @@ fn main() {
     let mut scene = Scene::new();
     
     let white_diffuse_mat: Arc<dyn RTMaterial> = Arc::new(LambertianMaterial::new(Vector3::new(0.8f32, 0.8f32, 0.8f32)));
-    let red_diffuse_mat: Arc<dyn RTMaterial> = Arc::new(LambertianMaterial::new(Vector3::new(0.8f32, 0f32, 0f32)));
+    let red_diffuse_mat: Arc<dyn RTMaterial> = Arc::new(LambertianMaterial::new(Vector3::new(0.8f32, 0.5f32, 0.5f32)));
     let emissive_mat: Arc<dyn RTMaterial> = Arc::new(EmissiveMaterial::new(Vector3::new(1.7f32, 1.7f32, 1.7f32)));
 
     scene.add_object(Box::new(Sphere::new(Vector3::new(0f32, 3f32, 10f32), 3f32, Arc::clone(&white_diffuse_mat))));
@@ -48,20 +48,13 @@ fn main() {
         let s_width = rl.get_screen_width();
         let s_height = rl.get_screen_height();
 
-        if s_width != prev_s_width || s_height != prev_s_height {
-            framebuf = Framebuffer::new((s_width as f32 * res_scale) as usize, (s_height as f32 * res_scale) as usize);
-            tex = rl.load_texture_from_image(&thread, &Image::gen_image_color(framebuf.width as i32, framebuf.height as i32, Color::BLACK)).expect("Failed to allocate texture");
-            renderer.reset();
-        }
-
-        
-        if prev_scale != res_scale  {
+        if s_width != prev_s_width || s_height != prev_s_height || prev_scale != res_scale {
             framebuf = Framebuffer::new((s_width as f32 * res_scale) as usize, (s_height as f32 * res_scale) as usize);
             tex = rl.load_texture_from_image(&thread, &Image::gen_image_color(framebuf.width as i32, framebuf.height as i32, Color::BLACK)).expect("Failed to allocate texture");
             renderer.reset();
             prev_scale = res_scale;
         }
-
+        
         //let now = Instant::now();
         renderer.render_sample(framebuf.width, framebuf.height, &mut framebuf);
         tex.update_texture(&framebuf.to_bytes_s(renderer.num_samples as f32));

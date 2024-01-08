@@ -163,7 +163,7 @@ impl Renderer<'_> {
 
     pub fn render_sample(&mut self, width: usize, height: usize, frame_buffer: &mut Framebuffer) {
         self.camera.update_viewport(width, height);
-        //let mut i = 0;
+
         frame_buffer.data.par_iter_mut().enumerate().for_each(|(i, pixel)| {
             let x = i % width;
             let y = i / width;
@@ -202,7 +202,7 @@ impl Renderer<'_> {
                     }
                 }
             },
-            None => return sky_color(ray)
+            None => return Vector3::new(0f32,0f32,0f32)
         }
     }
 
