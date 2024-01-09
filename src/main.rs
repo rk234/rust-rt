@@ -28,15 +28,14 @@ fn main() {
     let mut scene = Scene::new();
     
     let white_diffuse_mat: Arc<dyn RTMaterial> = Arc::new(LambertianMaterial::new(Vector3::new(0.8f32, 0.8f32, 0.8f32)));
-    let red_diffuse_mat: Arc<dyn RTMaterial> = Arc::new(LambertianMaterial::new(Vector3::new(0.8f32, 0.5f32, 0.5f32)));
+    let blue_diffuse_mat: Arc<dyn RTMaterial> = Arc::new(LambertianMaterial::new(Vector3::new(0.3f32, 0.3f32, 0.8f32)));
     let metal: Arc<dyn RTMaterial> = Arc::new(MetalMaterial::new(Vector3::new(0.8, 0.8, 0.8), 0.05f32));
     let emissive_mat: Arc<dyn RTMaterial> = Arc::new(EmissiveMaterial::new(Vector3::new(1.7f32, 1.7f32, 1.7f32)));
 
     scene.add_object(Box::new(Sphere::new(Vector3::new(-3f32, 3f32, 10f32), 3f32, Arc::clone(&metal))));
-    scene.add_object(Box::new(Sphere::new(Vector3::new(3f32, 3f32, 10f32), 3f32, Arc::clone(&red_diffuse_mat))));
+    scene.add_object(Box::new(Sphere::new(Vector3::new(3f32, 3f32, 10f32), 3f32, Arc::clone(&blue_diffuse_mat))));
     scene.add_object(Box::new(Sphere::new(Vector3::new(13f32, 15f32, 10f32), 3f32, Arc::clone(&emissive_mat))));
     scene.add_object(Box::new(Plane::new(Vector3::new(0f32, 0f32, 0f32), Vector3::new(0f32,1f32,0f32), Arc::clone(&white_diffuse_mat))));
-    //scene.add_object(Box::new(Sphere::new(Vector3::new(0f32, -1000f32, 10f32), 1000f32, Arc::clone(&red_diffuse_mat))));
 
     let mut renderer = Renderer::new(&scene, &mut cam);
 
@@ -46,6 +45,7 @@ fn main() {
     let mut prev_s_width = rl.get_screen_width();
     let mut prev_s_height = rl.get_screen_height();
     let mut prev_scale: f32 = res_scale;
+    let mut continue_rendering = true;
 
     while !rl.window_should_close() {
         let s_width = rl.get_screen_width();
@@ -59,8 +59,10 @@ fn main() {
         }
         
         //let now = Instant::now();
-        renderer.render_sample(framebuf.width, framebuf.height, &mut framebuf);
-        tex.update_texture(&framebuf.to_bytes_s(renderer.num_samples as f32));
+        if continue_rendering {
+            renderer.render_sample(framebuf.width, framebuf.height, &mut framebuf);
+            tex.update_texture(&framebuf.to_bytes_s(renderer.num_samples as f32));
+        }
         //println!("Outer elapsed {}ms", now.elapsed().as_millis());
 
 
@@ -80,7 +82,11 @@ fn main() {
             renderer.reset();
             framebuf.clear();
         }
-        res_scale = d.gui_slider_bar(Rectangle::new(100f32, (s_height-20) as f32, 200f32, 20f32), None, None, res_scale, 0.01f32, 1f32);
+        
+        if d.gui_button(Rectangle::new(100f32,(s_height-50) as f32, 100f32, 50f32), Some(CString::new("Toggle Rendering").unwrap().as_c_str())) {
+            continue_rendering = !continue_rendering;
+        }
+        res_scale = d.gui_slider_bar(Rectangle::new(200f32, (s_height-20) as f32, 200f32, 20f32), None, None, res_scale, 0.01f32, 1f32);
        
         prev_s_width = s_width;
         prev_s_height = s_height;
