@@ -3,7 +3,7 @@ use rendering::{RayCamera, Framebuffer, Renderer};
 use scene::Scene;
 use std::{ffi::CString, sync::Arc};
 
-use crate::{scene::Sphere, rendering::{RTMaterial, LambertianMaterial, EmissiveMaterial}};
+use crate::{scene::{Sphere, Plane, Quad}, rendering::{RTMaterial, LambertianMaterial, EmissiveMaterial, MetalMaterial}};
 mod rendering;
 mod scene;
 mod utils;
@@ -29,11 +29,14 @@ fn main() {
     
     let white_diffuse_mat: Arc<dyn RTMaterial> = Arc::new(LambertianMaterial::new(Vector3::new(0.8f32, 0.8f32, 0.8f32)));
     let red_diffuse_mat: Arc<dyn RTMaterial> = Arc::new(LambertianMaterial::new(Vector3::new(0.8f32, 0.5f32, 0.5f32)));
+    let metal: Arc<dyn RTMaterial> = Arc::new(MetalMaterial::new(Vector3::new(0.8, 0.8, 0.8), 0.05f32));
     let emissive_mat: Arc<dyn RTMaterial> = Arc::new(EmissiveMaterial::new(Vector3::new(1.7f32, 1.7f32, 1.7f32)));
 
-    scene.add_object(Box::new(Sphere::new(Vector3::new(0f32, 3f32, 10f32), 3f32, Arc::clone(&white_diffuse_mat))));
+    scene.add_object(Box::new(Sphere::new(Vector3::new(-3f32, 3f32, 10f32), 3f32, Arc::clone(&metal))));
+    scene.add_object(Box::new(Sphere::new(Vector3::new(3f32, 3f32, 10f32), 3f32, Arc::clone(&red_diffuse_mat))));
     scene.add_object(Box::new(Sphere::new(Vector3::new(13f32, 15f32, 10f32), 3f32, Arc::clone(&emissive_mat))));
-    scene.add_object(Box::new(Sphere::new(Vector3::new(0f32, -1000f32, 10f32), 1000f32, Arc::clone(&red_diffuse_mat))));
+    scene.add_object(Box::new(Plane::new(Vector3::new(0f32, 0f32, 0f32), Vector3::new(0f32,1f32,0f32), Arc::clone(&white_diffuse_mat))));
+    //scene.add_object(Box::new(Sphere::new(Vector3::new(0f32, -1000f32, 10f32), 1000f32, Arc::clone(&red_diffuse_mat))));
 
     let mut renderer = Renderer::new(&scene, &mut cam);
 

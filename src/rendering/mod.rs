@@ -1,4 +1,4 @@
-use crate::{scene::Scene, utils::rand_in_hemisphere};
+use crate::{scene::Scene, utils::{rand_in_hemisphere, reflect, rand_unit_vec}};
 use rand::Rng;
 use raylib::prelude::*;
 use std::ops::Add;
@@ -202,7 +202,7 @@ impl Renderer<'_> {
                     }
                 }
             },
-            None => return Vector3::new(0f32,0f32,0f32)
+            None => return sky_color(ray)//Vector3::new(0.1f32,0.1f32,0.1f32)
         }
     }
 
@@ -304,14 +304,17 @@ impl MetalMaterial {
 
 impl RTMaterial for MetalMaterial {
     fn attenuation(&self, position: Vector3, normal: Vector3) -> Vector3 {
-        todo!()
+        return self.albedo;
     }
 
     fn scatter(&self, in_ray: Ray, position: Vector3, normal: Vector3) -> Option<Ray> {
-        todo!()
+        return Some(Ray::new(
+            position + (normal*EPSILON),
+            reflect(in_ray.direction, normal) + (rand_unit_vec()*self.roughness)
+        ))
     }
 
     fn emissive(&self, position: Vector3, normal: Vector3) -> bool {
-        todo!()
+        return false
     }
 }

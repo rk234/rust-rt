@@ -1,4 +1,4 @@
-use std::sync::Arc;
+use std::{sync::Arc, f32::EPSILON};
 
 use crate::rendering::{Ray, RTMaterial};
 use raylib::prelude::*;
@@ -109,10 +109,87 @@ impl SceneObject for Sphere {
     }
 }
 
-struct Plane {
-    postion: Vector3,
-    normal: Vector3
+pub struct Plane {
+    position: Vector3,
+    normal: Vector3,
+    material: Arc<dyn RTMaterial>
 }
 
 impl Plane {
+    pub fn new(position: Vector3, normal: Vector3, material: Arc<dyn RTMaterial>) -> Plane {
+        return Plane {
+            position,
+            normal,
+            material
+        }
+    }
+}
+
+impl SceneObject for Plane {
+    fn intersect(&self, ray: &Ray) -> Option<HitData> {
+        let pos = ray_plane_intersection(ray, self.position, self.normal);
+        match pos {
+            Some(hit) => return Some(HitData::new(hit, self.normal, self.material())),
+            None => return None
+        }
+    }
+
+    fn material(&self) -> Arc<dyn RTMaterial> {
+        return Arc::clone(&self.material)
+    }
+
+    fn update(&self, dt: f32) {}
+}
+
+pub fn ray_plane_intersection(ray: &Ray, position: Vector3, normal: Vector3) -> Option<Vector3> {
+    let denom = normal.dot(ray.direction);
+    if denom.abs() > 1e-6 {
+        let p0l0 = position - ray.origin;
+        let t = p0l0.dot(normal) / denom;
+        if t > 0f32 {
+            return Some(ray.at(t));
+        }
+    }
+
+    return None;
+}
+
+
+pub struct Quad {
+    position: Vector3,
+    normal: Vector3,
+    size: Vector2,
+    material: Arc<dyn RTMaterial>
+}
+
+impl Quad {
+    pub fn new(position: Vector3, normal: Vector3, size: Vector2, material: Arc<dyn RTMaterial>) -> Quad {
+        return Quad {
+            position,
+            normal,
+            size,
+            material
+        }
+    }
+}
+
+impl SceneObject for Quad {
+    fn intersect(&self, ray: &Ray) -> Option<HitData> {
+        let hit = ray_plane_intersection(ray, self.position, self.normal);
+        match hit {
+            Some(position) => {
+                
+                todo!()
+            },
+            None => return None
+        }
+    }
+
+    fn material(&self) -> Arc<dyn RTMaterial> {
+        Arc::clone(&self.material)
+    }
+
+    fn update(&self, dt: f32) {
+        todo!()
+    }
 }
