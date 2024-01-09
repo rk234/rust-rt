@@ -29,7 +29,7 @@ fn main() {
     
     let white_diffuse_mat: Arc<dyn RTMaterial> = Arc::new(LambertianMaterial::new(Vector3::new(0.8f32, 0.8f32, 0.8f32)));
     let blue_diffuse_mat: Arc<dyn RTMaterial> = Arc::new(LambertianMaterial::new(Vector3::new(0.3f32, 0.3f32, 0.8f32)));
-    let metal: Arc<dyn RTMaterial> = Arc::new(MetalMaterial::new(Vector3::new(0.8, 0.8, 0.8), 0.05f32));
+    let metal: Arc<dyn RTMaterial> = Arc::new(MetalMaterial::new(Vector3::new(1.0, 1.0, 1.0), 0.0f32));
     let emissive_mat: Arc<dyn RTMaterial> = Arc::new(EmissiveMaterial::new(Vector3::new(1.7f32, 1.7f32, 1.7f32)));
 
     scene.add_object(Box::new(Sphere::new(Vector3::new(-3f32, 3f32, 10f32), 3f32, Arc::clone(&metal))));
@@ -58,22 +58,16 @@ fn main() {
             prev_scale = res_scale;
         }
         
-        //let now = Instant::now();
         if continue_rendering {
             renderer.render_sample(framebuf.width, framebuf.height, &mut framebuf);
             tex.update_texture(&framebuf.to_bytes_s(renderer.num_samples as f32));
         }
-        //println!("Outer elapsed {}ms", now.elapsed().as_millis());
-
 
         let fps = rl.get_fps();
         let dt = rl.get_frame_time() * 1000f32;
-        
 
         let mut d: RaylibDrawHandle<'_> = rl.begin_drawing(&thread);
 
-        d.clear_background(Color::WHITE);
-        //d.draw_texture(&tex, 0, 0, Color::WHITE);
         d.draw_texture_pro(&tex, Rectangle::new(0f32, 0f32, framebuf.width as f32, framebuf.height as f32), Rectangle::new(0f32,0f32, s_width as f32, s_height as f32), Vector2::new(0f32, 0f32), 0f32, Color::WHITE);
 
         d.draw_text(format!("FPS: {}; dt: {:.2}ms; samples: {}", fps, dt, renderer.num_samples).as_str(), 12, 12, 20, Color::GREEN);
@@ -82,7 +76,7 @@ fn main() {
             renderer.reset();
             framebuf.clear();
         }
-        
+
         if d.gui_button(Rectangle::new(100f32,(s_height-50) as f32, 100f32, 50f32), Some(CString::new("Toggle Rendering").unwrap().as_c_str())) {
             continue_rendering = !continue_rendering;
         }

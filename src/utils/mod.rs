@@ -22,7 +22,6 @@ pub fn rand_unit_vec() -> Vector3 {
     return rand_in_unit_sphere().normalized();
 }
 
-
 pub fn rand_in_hemisphere(normal: Vector3) -> Vector3 {
     let vec = rand_unit_vec();
 
