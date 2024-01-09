@@ -32,3 +32,7 @@ pub fn rand_in_hemisphere(normal: Vector3) -> Vector3 {
         return vec.scale_by(-1f32);
     }
 }
+
+pub fn reflect(in_vec: Vector3, normal: Vector3) -> Vector3 {
+    return in_vec.reflect_from(normal);
+}

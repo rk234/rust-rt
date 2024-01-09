@@ -287,3 +287,31 @@ impl RTMaterial for EmissiveMaterial {
         true
     }
 }
+
+pub struct MetalMaterial {
+    roughness: f32,
+    albedo: Vector3
+}
+
+impl MetalMaterial {
+    pub fn new(albedo: Vector3, roughness: f32) -> MetalMaterial {
+        return MetalMaterial {
+            roughness,
+            albedo
+        };
+    }
+}
+
+impl RTMaterial for MetalMaterial {
+    fn attenuation(&self, position: Vector3, normal: Vector3) -> Vector3 {
+        todo!()
+    }
+
+    fn scatter(&self, in_ray: Ray, position: Vector3, normal: Vector3) -> Option<Ray> {
+        todo!()
+    }
+
+    fn emissive(&self, position: Vector3, normal: Vector3) -> bool {
+        todo!()
+    }
+}
