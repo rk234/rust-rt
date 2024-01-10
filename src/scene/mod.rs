@@ -178,7 +178,6 @@ impl SceneObject for Quad {
         let hit = ray_plane_intersection(ray, self.position, self.normal);
         match hit {
             Some(position) => {
-                
                 todo!()
             },
             None => return None

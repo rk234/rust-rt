@@ -176,7 +176,7 @@ impl Renderer<'_> {
     }
 
     fn cast(&self, ray: Ray, depth: i32)  -> Vector3 {
-        if depth < 0 {
+        if depth <= 0 {
             return Vector3::new(0f32, 0f32, 0f32);
         }
 

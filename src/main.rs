@@ -29,7 +29,7 @@ fn main() {
     
     let white_diffuse_mat: Arc<dyn RTMaterial> = Arc::new(LambertianMaterial::new(Vector3::new(0.8f32, 0.8f32, 0.8f32)));
     let blue_diffuse_mat: Arc<dyn RTMaterial> = Arc::new(LambertianMaterial::new(Vector3::new(0.3f32, 0.3f32, 0.8f32)));
-    let metal: Arc<dyn RTMaterial> = Arc::new(MetalMaterial::new(Vector3::new(1.0, 1.0, 1.0), 0.0f32));
+    let metal: Arc<dyn RTMaterial> = Arc::new(MetalMaterial::new(Vector3::new(1.0, 0.0, 0.0), 0.1f32));
     let emissive_mat: Arc<dyn RTMaterial> = Arc::new(EmissiveMaterial::new(Vector3::new(1.7f32, 1.7f32, 1.7f32)));
 
     scene.add_object(Box::new(Sphere::new(Vector3::new(-3f32, 3f32, 10f32), 3f32, Arc::clone(&metal))));
