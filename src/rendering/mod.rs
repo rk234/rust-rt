@@ -129,9 +129,9 @@ impl Framebuffer {
         
         let mut i = 0;
         for color in &self.data {
-            bytes[i] = (color.x * 255f32/scale) as u8;
-            bytes[i+1] = (color.y * 255f32/scale) as u8;
-            bytes[i+2] = (color.z * 255f32/scale) as u8;
+            bytes[i] = ((color.x/scale).sqrt() * 255f32) as u8;
+            bytes[i+1] = ((color.y/scale).sqrt() * 255f32) as u8;
+            bytes[i+2] = ((color.z/scale).sqrt() * 255f32) as u8;
             bytes[i+3] = 255;
             i+=4;
         }
@@ -202,7 +202,7 @@ impl Renderer<'_> {
                     }
                 }
             },
-            None => return Vector3::new(0.0f32,0.0f32,0.0f32) //sky_color(ray)//
+            None => sky_color(ray)//return Vector3::new(0.0f32,0.0f32,0.0f32)
         }
     }
 
