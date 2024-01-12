@@ -29,14 +29,14 @@ fn main() {
     
     let white_diffuse_mat: Arc<dyn RTMaterial> = Arc::new(LambertianMaterial::new(Vector3::new(0.8f32, 0.8f32, 0.8f32)));
     let blue_diffuse_mat: Arc<dyn RTMaterial> = Arc::new(LambertianMaterial::new(Vector3::new(0.3f32, 0.3f32, 0.8f32)));
-    let metal: Arc<dyn RTMaterial> = Arc::new(MetalMaterial::new(Vector3::new(1.0, 0.0, 0.0), 0.1f32));
+    let metal: Arc<dyn RTMaterial> = Arc::new(MetalMaterial::new(Vector3::new(0.5, 0.5, 0.5), 0.0f32));
     let emissive_mat: Arc<dyn RTMaterial> = Arc::new(EmissiveMaterial::new(Vector3::new(1.7f32, 1.7f32, 1.7f32)));
 
-    scene.add_object(Box::new(Sphere::new(Vector3::new(-3f32, 3f32, 10f32), 3f32, Arc::clone(&metal))));
-    scene.add_object(Box::new(Sphere::new(Vector3::new(3f32, 3f32, 10f32), 3f32, Arc::clone(&blue_diffuse_mat))));
+    scene.add_object(Box::new(Sphere::new(Vector3::new(-3f32, 3f32, 10f32), 3f32, Arc::clone(&blue_diffuse_mat))));
+    scene.add_object(Box::new(Sphere::new(Vector3::new(3f32, 3f32, 10f32), 3f32, Arc::clone(&white_diffuse_mat))));
     scene.add_object(Box::new(Sphere::new(Vector3::new(13f32, 15f32, 10f32), 3f32, Arc::clone(&emissive_mat))));
-    scene.add_object(Box::new(Plane::new(Vector3::new(0f32, 0f32, 0f32), Vector3::new(0f32,1f32,0f32), Arc::clone(&white_diffuse_mat))));
-
+    //scene.add_object(Box::new(Plane::new(Vector3::new(0f32, 0f32, 0f32), Vector3::new(0f32,1f32,0f32), Arc::clone(&white_diffuse_mat))));
+    scene.add_object(Box::new(Quad::new(Vector3::new(0f32, 0f32, 10f32), Vector3::new(20.0,0.0,0.0), Vector3::new(0.0,0.0,10.0), Arc::clone(&white_diffuse_mat))));
     let mut renderer = Renderer::new(&scene, &mut cam);
 
     let mut tex = rl.load_texture_from_image(&thread, &img).expect("Failed to load");

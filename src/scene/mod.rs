@@ -157,17 +157,20 @@ pub fn ray_plane_intersection(ray: &Ray, position: Vector3, normal: Vector3) -> 
 
 pub struct Quad {
     position: Vector3,
+    u: Vector3,
+    v: Vector3,
     normal: Vector3,
-    size: Vector2,
     material: Arc<dyn RTMaterial>
 }
 
 impl Quad {
-    pub fn new(position: Vector3, normal: Vector3, size: Vector2, material: Arc<dyn RTMaterial>) -> Quad {
+    pub fn new(position: Vector3, u: Vector3, v: Vector3, material: Arc<dyn RTMaterial>) -> Quad {
+        //println!("Normal {}", u.cross(v));
         return Quad {
             position,
-            normal,
-            size,
+            u,
+            v,
+            normal: u.cross(v).normalized(),
             material
         }
     }
@@ -177,8 +180,19 @@ impl SceneObject for Quad {
     fn intersect(&self, ray: &Ray) -> Option<HitData> {
         let hit = ray_plane_intersection(ray, self.position, self.normal);
         match hit {
-            Some(position) => {
-                todo!()
+            Some(p) => {
+                let a = self.u.dot((p - self.position) / self.u.length());
+                let b = self.v.dot((p - self.position) / self.v.length());
+                //println!("a: {} b: {}", a, b);
+                if a > -self.u.length()/2.0 && a < self.u.length()/2.0 && b > -self.v.length()/2.0 && b < self.v.length()/2.0 {
+                    if ray.direction.dot(self.normal) > 0.0 {
+                        return Some(HitData::new(p, -self.normal, self.material()))
+                    } else {
+                        return Some(HitData::new(p, self.normal, self.material()))
+                    }
+                } else {
+                    return None
+                }
             },
             None => return None
         }

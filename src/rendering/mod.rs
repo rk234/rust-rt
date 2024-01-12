@@ -202,7 +202,7 @@ impl Renderer<'_> {
                     }
                 }
             },
-            None => sky_color(ray)//return Vector3::new(0.0f32,0.0f32,0.0f32)
+            None => sky_color(ray) //return Vector3::new(0.0f32,0.0f32,0.0f32) 
         }
     }
 
