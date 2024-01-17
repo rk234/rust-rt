@@ -170,7 +170,7 @@ impl Quad {
             position,
             u,
             v,
-            normal: u.cross(v).normalized(),
+            normal: u.normalized().cross(v.normalized()).normalized(),
             material
         }
     }

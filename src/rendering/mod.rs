@@ -7,10 +7,10 @@ use rayon::prelude::*;
 pub const EPSILON: f32 = 0.0001f32;
 
 pub struct RayCamera {
-    position: Vector3,
-    direction: Vector3,
-    pitch: f32,
-    yaw: f32,
+    pub position: Vector3,
+    pub direction: Vector3,
+    pub pitch: f32,
+    pub yaw: f32,
     near_plane: f32,
     viewport_size: Vector3,
 }
@@ -21,7 +21,7 @@ impl RayCamera {
             position,
             direction: Vector3::new(0f32, 0f32, 1f32),
             pitch: 0f32,
-            yaw: 0f32,
+            yaw: 90f32,
             near_plane: 1f32,
             viewport_size: Vector3::new(2f32 * 16f32 / 9f32, 2f32, 0f32),
         }
@@ -64,6 +64,10 @@ impl RayCamera {
             .normalized();
 
         return Ray::new(self.position, dir);
+    }
+
+    pub fn handle_input(&self, handle: &RaylibDrawHandle<'_>) {
+
     }
 }
 
@@ -143,16 +147,14 @@ impl Framebuffer {
 pub struct Renderer<'a> {
     pub num_samples: u32,
     scene: &'a Scene,
-    camera: &'a mut RayCamera,
     num_bounces: u32,
 }
 
 impl Renderer<'_> {
-    pub fn new<'a>(scene: &'a Scene, camera: &'a mut RayCamera) -> Renderer<'a> {
+    pub fn new<'a>(scene: &'a Scene) -> Renderer<'a> {
         return Renderer {
             num_samples: 0,
             scene,
-            camera,
             num_bounces: 4,
         };
     }
@@ -161,13 +163,13 @@ impl Renderer<'_> {
         self.num_samples = 0;
     }
 
-    pub fn render_sample(&mut self, width: usize, height: usize, frame_buffer: &mut Framebuffer) {
-        self.camera.update_viewport(width, height);
+    pub fn render_sample(&mut self, width: usize, height: usize, frame_buffer: &mut Framebuffer, camera: &mut RayCamera) {
+        camera.update_viewport(width, height);
 
         frame_buffer.data.par_iter_mut().enumerate().for_each(|(i, pixel)| {
             let x = i % width;
             let y = i / width;
-            let ray = self.camera.gen_primary_ray(x, y, width, height);
+            let ray = camera.gen_primary_ray(x, y, width, height);
             
             *pixel += self.cast(ray, self.num_bounces as i32);
         });
@@ -202,7 +204,7 @@ impl Renderer<'_> {
                     }
                 }
             },
-            None => sky_color(ray) //return Vector3::new(0.0f32,0.0f32,0.0f32) 
+            None => return Vector3::new(0.0f32,0.0f32,0.0f32)  //sky_color(ray) //
         }
     }
 
@@ -212,11 +214,12 @@ impl Renderer<'_> {
         height: usize,
         frame_buffer: &mut Framebuffer,
         samples: u32,
+        camera: &mut RayCamera
     ) {
         frame_buffer.clear();
 
         for _ in 0..samples {
-            self.render_sample(width, height, frame_buffer);
+            self.render_sample(width, height, frame_buffer, camera);
         }
 
         frame_buffer.normalize(self.num_samples as f32);
