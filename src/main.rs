@@ -1,9 +1,12 @@
 use raylib::prelude::*;
-use rendering::{RayCamera, Framebuffer, Renderer};
+use rendering::RayCamera;
 use scene::Scene;
 use std::{ffi::CString, sync::Arc};
+use rendering::Framebuffer;
+use rendering::{EmissiveMaterial, LambertianMaterial, MetalMaterial, RTMaterial};
+use rendering::Renderer;
 
-use crate::{scene::{Sphere, Plane, Quad, SceneObject}, rendering::{RTMaterial, LambertianMaterial, EmissiveMaterial, MetalMaterial}};
+use crate::scene::{Quad, SceneObject, Sphere};
 mod rendering;
 mod scene;
 mod utils;
@@ -28,29 +31,18 @@ fn main() {
     let mut scene = Scene::new();
     
     let white_diffuse_mat: Arc<dyn RTMaterial> = Arc::new(LambertianMaterial::new(Vector3::new(0.8f32, 0.8f32, 0.8f32)));
-    let green_diffuse_mat: Arc<dyn RTMaterial> = Arc::new(LambertianMaterial::new(Vector3::new(0.0f32, 1.0f32, 0.0f32)));
-    let red_diffuse_mat: Arc<dyn RTMaterial> = Arc::new(LambertianMaterial::new(Vector3::new(1.0f32, 0.0f32, 0.0f32)));
-    let metal: Arc<dyn RTMaterial> = Arc::new(MetalMaterial::new(Vector3::new(1.0, 1.0, 1.0), 0.0f32));
+    let metal: Arc<dyn RTMaterial> = Arc::new(MetalMaterial::new(Vector3::new(1.0, 1.0, 1.0), 0.2f32));
     let light: Arc<dyn RTMaterial> = Arc::new(EmissiveMaterial::new(Vector3::new(10.0, 10.0, 10.0)));
 
-    let left_wall: Box<dyn SceneObject> = Box::new(Quad::new(Vector3::new(-1.0, 3.0, 3.0), Vector3::new(0.0, 3.0, 0.0), Vector3::new(0.0, 0.0, 2.0), Arc::clone(&green_diffuse_mat)));
-    let right_wall: Box<dyn SceneObject> = Box::new(Quad::new(Vector3::new(1.0, 3.0, 3.0), Vector3::new(0.0, 3.0, 0.0), Vector3::new(0.0, 0.0, 2.0), Arc::clone(&red_diffuse_mat)));
-    let back_wall: Box<dyn SceneObject> = Box::new(Quad::new(Vector3::new(0.0, 3.0, 3.0), Vector3::new(0.0, 3.0, 0.0), Vector3::new(2.0, 0.0, 0.0), Arc::clone(&white_diffuse_mat)));
-    //let front_wall: Box<dyn SceneObject> = Box::new(Quad::new(Vector3::new(0.0, 4.5, 0.0), Vector3::new(0.0, 3.0, 0.0), Vector3::new(5.0, 0.0, 0.0), Arc::clone(&white_diffuse_mat)));
-    let bottom_wall: Box<dyn SceneObject> = Box::new(Quad::new(Vector3::new(0.0, 1.5, 3.0), Vector3::new(2.0, 0.0, 0.0), Vector3::new(0.0, 0.0, 2.0), Arc::clone(&white_diffuse_mat)));
-    let top_wall: Box<dyn SceneObject> = Box::new(Quad::new(Vector3::new(0.0, 4.5, 3.0), Vector3::new(2.0, 0.0, 0.0), Vector3::new(0.0, 0.0, 2.0), Arc::clone(&white_diffuse_mat)));
-    let light_source: Box<dyn SceneObject> = Box::new(Quad::new(Vector3::new(0.0, 4.499, 1.0), Vector3::new(1.0, 0.0, 0.0), Vector3::new(0.0, 0.0, 1.0), Arc::clone(&light)));
+    let quad: Box<dyn SceneObject> = Box::new(Quad::new(Vector3::new(-10.0, 0.0, -10.0), Vector3::new(20.0, 0.0, 0.0), Vector3::new(0.0, 0.0, 20.0), Arc::clone(&white_diffuse_mat)));
+    let light_quad: Box<dyn SceneObject> = Box::new(Quad::new(Vector3::new(-0.5, 5.0, 1.0), Vector3::new(2.0, 0.0, 0.0), Vector3::new(0.0, 0.0, 2.0), Arc::clone(&light)));
 
-    let sphere_a: Box<dyn SceneObject> = Box::new(Sphere::new(Vector3::new(0.5, 2.0,2.5), 0.5, Arc::clone(&metal)));
-    let sphere_b: Box<dyn SceneObject> = Box::new(Sphere::new(Vector3::new(-0.5, 2.0,2.0), 0.5, Arc::clone(&white_diffuse_mat)));
 
-    scene.add_object(left_wall);
-    scene.add_object(right_wall);
-    scene.add_object(back_wall);
-    //scene.add_object(front_wall);
-    scene.add_object(bottom_wall);
-    scene.add_object(top_wall);
-    scene.add_object(light_source);
+    let sphere_a: Box<dyn SceneObject> = Box::new(Sphere::new(Vector3::new(0.5, 0.5,2.0), 0.5, Arc::clone(&metal)));
+    let sphere_b: Box<dyn SceneObject> = Box::new(Sphere::new(Vector3::new(-0.5, 0.5,2.0), 0.5, Arc::clone(&white_diffuse_mat)));
+
+    scene.add_object(quad);
+    scene.add_object(light_quad);
     scene.add_object(sphere_a);
     scene.add_object(sphere_b);
 
@@ -71,11 +63,16 @@ fn main() {
         let s_width = rl.get_screen_width();
         let s_height = rl.get_screen_height();
 
-        if s_width != prev_s_width || s_height != prev_s_height || prev_scale != res_scale || prev_cam_dir != cam.direction || prev_cam_pos != cam.position{
+        if s_width != prev_s_width || s_height != prev_s_height || prev_scale != res_scale {
             framebuf = Framebuffer::new((s_width as f32 * res_scale) as usize, (s_height as f32 * res_scale) as usize);
             tex = rl.load_texture_from_image(&thread, &Image::gen_image_color(framebuf.width as i32, framebuf.height as i32, Color::BLACK)).expect("Failed to allocate texture");
             renderer.reset();
             prev_scale = res_scale;
+        }
+
+        if prev_cam_dir != cam.direction || prev_cam_pos != cam.position {
+            renderer.reset();
+            framebuf.clear();
             prev_cam_dir = cam.direction;
             prev_cam_pos = cam.position;
         }
@@ -104,7 +101,6 @@ fn main() {
         }
 
         res_scale = d.gui_slider_bar(Rectangle::new(200f32, (s_height-20) as f32, 200f32, 20f32), None, None, res_scale, 0.01f32, 1f32);
-
         
         if d.is_mouse_button_down(MouseButton::MOUSE_BUTTON_LEFT) {
             let mut dx = -d.get_mouse_delta().x;
@@ -129,12 +125,15 @@ fn main() {
 
         if d.is_key_down(KeyboardKey::KEY_W) {
             cam.position += cam.direction*0.05;
-        } else if d.is_key_down(KeyboardKey::KEY_S) {
+        }
+        if d.is_key_down(KeyboardKey::KEY_S) {
             cam.position -= cam.direction*0.05;
-        } else if d.is_key_down(KeyboardKey::KEY_A) {
-
-        } else if d.is_key_down(KeyboardKey::KEY_D) {
-
+        }
+        if d.is_key_down(KeyboardKey::KEY_A) {
+            cam.position -= Vector3::new(0.0, 1.0, 0.0).cross(cam.direction)*0.05;
+        }
+        if d.is_key_down(KeyboardKey::KEY_D) {
+            cam.position += Vector3::new(0.0, 1.0, 0.0).cross(cam.direction)*0.05;
         }
 
         prev_s_width = s_width;

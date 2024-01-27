@@ -1,7 +1,8 @@
-use std::{sync::Arc, f32::EPSILON};
+use std::sync::Arc;
 
-use crate::rendering::{Ray, RTMaterial};
+use crate::rendering::RTMaterial;
 use raylib::prelude::*;
+use crate::rendering::Ray;
 
 pub struct Scene {
     scene_objects: Vec<Box<dyn SceneObject>>
@@ -159,6 +160,7 @@ pub struct Quad {
     position: Vector3,
     u: Vector3,
     v: Vector3,
+    w: Vector3,
     normal: Vector3,
     material: Arc<dyn RTMaterial>
 }
@@ -166,11 +168,14 @@ pub struct Quad {
 impl Quad {
     pub fn new(position: Vector3, u: Vector3, v: Vector3, material: Arc<dyn RTMaterial>) -> Quad {
         //println!("Normal {}", u.cross(v));
+        let n = u.cross(v);
+        println!("Normal: ({}, {}, {})", n.normalized().x, n.normalized().y, n.normalized().z);
         return Quad {
             position,
             u,
             v,
-            normal: u.normalized().cross(v.normalized()).normalized(),
+            w: n/n.dot(n),
+            normal: n.normalized(),
             material
         }
     }
@@ -179,22 +184,25 @@ impl Quad {
 impl SceneObject for Quad {
     fn intersect(&self, ray: &Ray) -> Option<HitData> {
         let hit = ray_plane_intersection(ray, self.position, self.normal);
-        match hit {
+        return match hit {
             Some(p) => {
-                let a = self.u.dot((p - self.position) / self.u.length());
-                let b = self.v.dot((p - self.position) / self.v.length());
-                //println!("a: {} b: {}", a, b);
-                if a > -self.u.length()/2.0 && a < self.u.length()/2.0 && b > -self.v.length()/2.0 && b < self.v.length()/2.0 {
-                    if ray.direction.dot(self.normal) > 0.0 {
-                        return Some(HitData::new(p, -self.normal, self.material()))
+                let plane_hit_point = p - self.position;
+                let alpha = self.w.dot(plane_hit_point.cross(self.v));
+                let beta = self.w.dot(self.u.cross(plane_hit_point));
+
+                if alpha >= 0.0 && alpha <= 1.0 && beta >= 0.0 && beta <= 1.0 {
+                    let norm = if ray.direction.dot(self.normal) > 0.0 {
+                        self.normal.scale_by(-1.0)
                     } else {
-                        return Some(HitData::new(p, self.normal, self.material()))
-                    }
+                        self.normal
+                    };
+
+                    Some(HitData::new(p, norm, Arc::clone(&self.material)))
                 } else {
-                    return None
+                    None
                 }
             },
-            None => return None
+            None => None
         }
     }
 
