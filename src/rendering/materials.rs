@@ -72,7 +72,7 @@ impl MetalMaterial {
 }
 
 impl RTMaterial for MetalMaterial {
-    fn attenuation(&self, position: Vector3, normal: Vector3) -> Vector3 {
+    fn attenuation(&self, _position: Vector3, _normal: Vector3) -> Vector3 {
         return self.albedo;
     }
 
@@ -83,7 +83,7 @@ impl RTMaterial for MetalMaterial {
         ))
     }
 
-    fn emissive(&self, position: Vector3, normal: Vector3) -> bool {
+    fn emissive(&self, _position: Vector3, _normal: Vector3) -> bool {
         return false
     }
 }

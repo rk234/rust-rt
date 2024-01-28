@@ -25,10 +25,10 @@ pub fn rand_unit_vec() -> Vector3 {
 pub fn rand_in_hemisphere(normal: Vector3) -> Vector3 {
     let vec = rand_unit_vec();
 
-    if vec.dot(normal) > 0f32  {
-        return vec;
+    return if vec.dot(normal) > 0f32 {
+        vec
     } else {
-        return vec.scale_by(-1f32);
+        vec.scale_by(-1f32)
     }
 }
 

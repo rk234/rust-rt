@@ -46,8 +46,8 @@ impl RayCamera {
             .normalized();
         let local_up = adjacent.cross(self.direction).normalized();
         let bottom_left = adjacent
-            .scale_by(-self.viewport_size.x as f32 / 2f32)
-            .add(local_up.scale_by(-self.viewport_size.y as f32 / 2f32));
+            .scale_by(-self.viewport_size.x / 2f32)
+            .add(local_up.scale_by(-self.viewport_size.y / 2f32));
 
         let dir = bottom_left
             .add(adjacent.scale_by(
@@ -64,7 +64,7 @@ impl RayCamera {
         return Ray::new(self.position, dir);
     }
 
-    pub fn handle_input(&self, handle: &RaylibDrawHandle<'_>) {
+    pub fn handle_input(&self, _handle: &RaylibDrawHandle<'_>) {
 
     }
 }

@@ -13,7 +13,7 @@ pub struct Renderer<'a> {
 }
 
 impl Renderer<'_> {
-    pub fn new<'a>(scene: &'a Scene) -> Renderer<'a> {
+    pub fn new(scene: &Scene) -> Renderer {
         return Renderer {
             num_samples: 0,
             scene,
@@ -55,18 +55,18 @@ impl Renderer<'_> {
                 let attenuation = material.attenuation(position, normal);
                 let emissive = material.emissive(position, normal);
 
-                match scatter {
-                    Some(scatter_ray) => return attenuation * self.cast(scatter_ray, depth-1),
+                return match scatter {
+                    Some(scatter_ray) => attenuation * self.cast(scatter_ray, depth - 1),
                     None => {
                         if emissive {
-                            return attenuation;
+                            attenuation
                         } else {
-                            return Vector3::new(0f32,0f32,0f32)
+                            Vector3::new(0f32, 0f32, 0f32)
                         }
                     }
                 }
             },
-            None => sky_color(ray)
+            None => Vector3::new(0.0, 0.0, 0.0)//sky_color(ray)
         }
     }
 

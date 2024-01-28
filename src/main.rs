@@ -11,12 +11,13 @@ mod rendering;
 mod scene;
 mod utils;
 
+//noinspection SpellCheckingInspection
 fn main() {
     const HEIGHT: i32 = 500;
     const WIDTH: i32 = 16*HEIGHT/9;
     let mut res_scale: f32 = 0.8f32;
 
-    let (mut rl, thread) = raylib::init()
+    let (mut rl, thread) = init()
         .size(WIDTH, HEIGHT)
         .resizable()
         .title("Rust Ray Tracing")
@@ -26,26 +27,11 @@ fn main() {
 
     let img = Image::gen_image_color(WIDTH, HEIGHT, Color::RED);
 
-    let mut cam = RayCamera::new(Vector3::new(0f32, 3f32, 0f32));
+    let mut cam = RayCamera::new(Vector3::new(0f32, 2f32, 0f32));
     let mut framebuf = Framebuffer::new(WIDTH as usize, HEIGHT as usize);
     let mut scene = Scene::new();
     
-    let white_diffuse_mat: Arc<dyn RTMaterial> = Arc::new(LambertianMaterial::new(Vector3::new(0.8f32, 0.8f32, 0.8f32)));
-    let metal: Arc<dyn RTMaterial> = Arc::new(MetalMaterial::new(Vector3::new(1.0, 1.0, 1.0), 0.2f32));
-    let light: Arc<dyn RTMaterial> = Arc::new(EmissiveMaterial::new(Vector3::new(10.0, 10.0, 10.0)));
-
-    let quad: Box<dyn SceneObject> = Box::new(Quad::new(Vector3::new(-10.0, 0.0, -10.0), Vector3::new(20.0, 0.0, 0.0), Vector3::new(0.0, 0.0, 20.0), Arc::clone(&white_diffuse_mat)));
-    let light_quad: Box<dyn SceneObject> = Box::new(Quad::new(Vector3::new(-0.5, 5.0, 1.0), Vector3::new(2.0, 0.0, 0.0), Vector3::new(0.0, 0.0, 2.0), Arc::clone(&light)));
-
-
-    let sphere_a: Box<dyn SceneObject> = Box::new(Sphere::new(Vector3::new(0.5, 0.5,2.0), 0.5, Arc::clone(&metal)));
-    let sphere_b: Box<dyn SceneObject> = Box::new(Sphere::new(Vector3::new(-0.5, 0.5,2.0), 0.5, Arc::clone(&white_diffuse_mat)));
-
-    scene.add_object(quad);
-    scene.add_object(light_quad);
-    scene.add_object(sphere_a);
-    scene.add_object(sphere_b);
-
+    init_scene(&mut scene);
     
     let mut renderer = Renderer::new(&scene);
 
@@ -139,4 +125,37 @@ fn main() {
         prev_s_width = s_width;
         prev_s_height = s_height;
     }
+}
+
+fn init_scene(scene: &mut Scene) {
+    let white_diffuse_mat: Arc<dyn RTMaterial> = Arc::new(LambertianMaterial::new(Vector3::new(0.8f32, 0.8f32, 0.8f32)));
+    let red_diffuse_mat: Arc<dyn RTMaterial> = Arc::new(LambertianMaterial::new(Vector3::new(0.65, 0.05, 0.05)));
+    let green_diffuse_mat: Arc<dyn RTMaterial> = Arc::new(LambertianMaterial::new(Vector3::new(0.12, 0.45, 0.15)));
+
+    let metal: Arc<dyn RTMaterial> = Arc::new(MetalMaterial::new(Vector3::new(1.0, 1.0, 1.0), 0.2f32));
+    let light: Arc<dyn RTMaterial> = Arc::new(EmissiveMaterial::new(Vector3::new(15.0, 15.0, 15.0)));
+
+    let bottom: Box<dyn SceneObject> = Box::new(Quad::new(Vector3::new(-2.0, 0.0, 1.0), Vector3::new(4.0, 0.0, 0.0), Vector3::new(0.0, 0.0, 4.0), Arc::clone(&white_diffuse_mat)));
+    let top: Box<dyn SceneObject> = Box::new(Quad::new(Vector3::new(-2.0, 4.0, 1.0), Vector3::new(4.0, 0.0, 0.0), Vector3::new(0.0, 0.0, 4.0), Arc::clone(&white_diffuse_mat)));
+    let left: Box<dyn SceneObject> = Box::new(Quad::new(Vector3::new(-2.0, 0.0, 1.0), Vector3::new(0.0, 0.0, 4.0), Vector3::new(0.0, 4.0, 0.0), Arc::clone(&red_diffuse_mat)));
+    let right: Box<dyn SceneObject> = Box::new(Quad::new(Vector3::new(2.0, 0.0, 1.0), Vector3::new(0.0, 0.0, 4.0), Vector3::new(0.0, 4.0, 0.0), Arc::clone(&green_diffuse_mat)));
+    let back: Box<dyn SceneObject> = Box::new(Quad::new(Vector3::new(-2.0, 0.0, 5.0), Vector3::new(4.0, 0.0, 0.0), Vector3::new(0.0, 4.0, 0.0), Arc::clone(&white_diffuse_mat)));
+    let light_quad: Box<dyn SceneObject> = Box::new(Quad::new(Vector3::new(-0.5, 3.999, 2.5), Vector3::new(1.0, 0.0, 0.0), Vector3::new(0.0, 0.0, 1.0), Arc::clone(&light)));
+
+
+    let bounce_wall: Box<dyn SceneObject> = Box::new(Quad::new(Vector3::new(-8.0, -4.0, 0.0), Vector3::new(12.0, 0.0, 0.0), Vector3::new(0.0, 12.0, 0.0), Arc::clone(&white_diffuse_mat)));
+
+
+    let sphere_a: Box<dyn SceneObject> = Box::new(Sphere::new(Vector3::new(1.0, 0.75,3.0), 0.75, Arc::clone(&metal)));
+    let sphere_b: Box<dyn SceneObject> = Box::new(Sphere::new(Vector3::new(-1.0, 0.75,3.0), 0.75, Arc::clone(&white_diffuse_mat)));
+
+    scene.add_object(bottom);
+    scene.add_object(top);
+    scene.add_object(light_quad);
+    scene.add_object(left);
+    scene.add_object(right);
+    scene.add_object(back);
+    scene.add_object(sphere_a);
+    scene.add_object(sphere_b);
+    scene.add_object(bounce_wall)
 }

@@ -10,7 +10,7 @@ impl Ray {
     pub fn new(origin: Vector3, direction: Vector3) -> Self {
         return Self {
             origin,
-            direction: direction,
+            direction,
         };
     }
 

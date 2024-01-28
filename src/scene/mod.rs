@@ -129,9 +129,9 @@ impl Plane {
 impl SceneObject for Plane {
     fn intersect(&self, ray: &Ray) -> Option<HitData> {
         let pos = ray_plane_intersection(ray, self.position, self.normal);
-        match pos {
-            Some(hit) => return Some(HitData::new(hit, self.normal, self.material())),
-            None => return None
+        return match pos {
+            Some(hit) => Some(HitData::new(hit, self.normal, self.material())),
+            None => None
         }
     }
 
@@ -139,7 +139,7 @@ impl SceneObject for Plane {
         return Arc::clone(&self.material)
     }
 
-    fn update(&self, dt: f32) {}
+    fn update(&self, _dt: f32) {}
 }
 
 pub fn ray_plane_intersection(ray: &Ray, position: Vector3, normal: Vector3) -> Option<Vector3> {
@@ -210,7 +210,7 @@ impl SceneObject for Quad {
         Arc::clone(&self.material)
     }
 
-    fn update(&self, dt: f32) {
+    fn update(&self, _dt: f32) {
         todo!()
     }
 }
