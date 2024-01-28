@@ -28,27 +28,29 @@ impl Framebuffer {
     }
 
     pub fn clear(&mut self) {
-        self.data.iter_mut().for_each(|v| {*v = Vector3::new(0f32, 0f32, 0f32)});
+        self.data
+            .iter_mut()
+            .for_each(|v| *v = Vector3::new(0f32, 0f32, 0f32));
     }
 
     pub fn normalize(&mut self, scale: f32) {
-        self.data.iter_mut().for_each(|v| {*v /= scale});
+        self.data.iter_mut().for_each(|v| *v /= scale);
     }
 
     pub fn to_bytes(&self) -> Vec<u8> {
         return self.to_bytes_s(1f32);
     }
 
-    pub fn to_bytes_s(&self, scale: f32) -> Vec<u8>{
-        let mut bytes: Vec<u8> = vec![0; self.width*self.height*4];
+    pub fn to_bytes_s(&self, scale: f32) -> Vec<u8> {
+        let mut bytes: Vec<u8> = vec![0; self.width * self.height * 4];
 
         let mut i = 0;
         for color in &self.data {
-            bytes[i] = ((color.x/scale).sqrt() * 255f32) as u8;
-            bytes[i+1] = ((color.y/scale).sqrt() * 255f32) as u8;
-            bytes[i+2] = ((color.z/scale).sqrt() * 255f32) as u8;
-            bytes[i+3] = 255;
-            i+=4;
+            bytes[i] = ((color.x / scale).sqrt() * 255f32) as u8;
+            bytes[i + 1] = ((color.y / scale).sqrt() * 255f32) as u8;
+            bytes[i + 2] = ((color.z / scale).sqrt() * 255f32) as u8;
+            bytes[i + 3] = 255;
+            i += 4;
         }
 
         return bytes;

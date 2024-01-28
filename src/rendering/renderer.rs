@@ -1,8 +1,8 @@
+use crate::rendering;
+use crate::rendering::{Framebuffer, RTMaterial, RayCamera};
+use crate::scene::Scene;
 use raylib::math::Vector3;
 use rayon::iter::{IndexedParallelIterator, IntoParallelRefMutIterator, ParallelIterator};
-use crate::rendering;
-use crate::rendering::{Framebuffer, RayCamera, RTMaterial};
-use crate::scene::Scene;
 
 pub const EPSILON: f32 = 0.0001f32;
 
@@ -25,16 +25,26 @@ impl Renderer<'_> {
         self.num_samples = 0;
     }
 
-    pub fn render_sample(&mut self, width: usize, height: usize, frame_buffer: &mut Framebuffer, camera: &mut RayCamera) {
+    pub fn render_sample(
+        &mut self,
+        width: usize,
+        height: usize,
+        frame_buffer: &mut Framebuffer,
+        camera: &mut RayCamera,
+    ) {
         camera.update_viewport(width, height);
 
-        frame_buffer.data.par_iter_mut().enumerate().for_each(|(i, pixel)| {
-            let x = i % width;
-            let y = i / width;
-            let ray = camera.gen_primary_ray(x, y, width, height);
+        frame_buffer
+            .data
+            .par_iter_mut()
+            .enumerate()
+            .for_each(|(i, pixel)| {
+                let x = i % width;
+                let y = i / width;
+                let ray = camera.gen_primary_ray(x, y, width, height);
 
-            *pixel += self.cast(ray, self.num_bounces as i32);
-        });
+                *pixel += self.cast(ray, self.num_bounces as i32);
+            });
 
         self.num_samples += 1;
     }
@@ -51,7 +61,7 @@ impl Renderer<'_> {
                 let position = hit_data.position;
                 let normal = hit_data.normal;
 
-                let scatter = material.scatter(ray, position + (normal*EPSILON), normal);
+                let scatter = material.scatter(ray, position + (normal * EPSILON), normal);
                 let attenuation = material.attenuation(position, normal);
                 let emissive = material.emissive(position, normal);
 
@@ -64,9 +74,9 @@ impl Renderer<'_> {
                             Vector3::new(0f32, 0f32, 0f32)
                         }
                     }
-                }
-            },
-            None => Vector3::new(0.0, 0.0, 0.0)//sky_color(ray)
+                };
+            }
+            None => Vector3::new(0.0, 0.0, 0.0), //sky_color(ray)
         }
     }
 
@@ -76,7 +86,7 @@ impl Renderer<'_> {
         height: usize,
         frame_buffer: &mut Framebuffer,
         samples: u32,
-        camera: &mut RayCamera
+        camera: &mut RayCamera,
     ) {
         frame_buffer.clear();
 

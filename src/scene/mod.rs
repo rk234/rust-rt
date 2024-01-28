@@ -1,18 +1,18 @@
 use std::sync::Arc;
 
 use crate::rendering::RTMaterial;
-use raylib::prelude::*;
 use crate::rendering::Ray;
+use raylib::prelude::*;
 
 pub struct Scene {
-    scene_objects: Vec<Box<dyn SceneObject>>
+    scene_objects: Vec<Box<dyn SceneObject>>,
 }
 
 impl Scene {
     pub fn new() -> Scene {
         return Scene {
-            scene_objects: Vec::new()
-        }
+            scene_objects: Vec::new(),
+        };
     }
 
     pub fn add_object(&mut self, obj: Box<dyn SceneObject>) {
@@ -37,7 +37,7 @@ impl Scene {
                         min_hit_dist = dist;
                     }
                 }
-                None => continue
+                None => continue,
             }
         }
 
@@ -48,12 +48,16 @@ impl Scene {
 pub struct HitData {
     pub position: Vector3,
     pub normal: Vector3,
-    pub material: Arc<dyn RTMaterial>
+    pub material: Arc<dyn RTMaterial>,
 }
 
 impl HitData {
     pub fn new(position: Vector3, normal: Vector3, material: Arc<dyn RTMaterial>) -> HitData {
-        HitData { position, normal, material }
+        HitData {
+            position,
+            normal,
+            material,
+        }
     }
 }
 
@@ -66,7 +70,7 @@ pub trait SceneObject: Send + Sync {
 pub struct Sphere {
     pub position: Vector3,
     pub radius: f32,
-    pub material: Arc<dyn RTMaterial>
+    pub material: Arc<dyn RTMaterial>,
 }
 
 impl Sphere {
@@ -74,8 +78,8 @@ impl Sphere {
         return Sphere {
             position,
             radius,
-            material
-        }
+            material,
+        };
     }
 }
 
@@ -84,15 +88,19 @@ impl SceneObject for Sphere {
         let l = ray.origin - self.position;
         let a = 1f32;
         let b = 2f32 * ray.direction.dot(l);
-        let c = l.dot(l) - self.radius*self.radius;
-        let disc = b*b - 4f32*a*c;
+        let c = l.dot(l) - self.radius * self.radius;
+        let disc = b * b - 4f32 * a * c;
 
         if disc > 0f32 {
-            let t0 = (-b+disc.sqrt()) / (2f32*a);
-            let t1 = (-b-disc.sqrt()) / (2f32*a);
-            let t = if t0 < t1 {t0} else {t1};
+            let t0 = (-b + disc.sqrt()) / (2f32 * a);
+            let t1 = (-b - disc.sqrt()) / (2f32 * a);
+            let t = if t0 < t1 { t0 } else { t1 };
             if t > 0f32 {
-                Some(HitData::new(ray.at(t), (ray.at(t)-self.position).normalized(), self.material()))
+                Some(HitData::new(
+                    ray.at(t),
+                    (ray.at(t) - self.position).normalized(),
+                    self.material(),
+                ))
             } else {
                 None
             }
@@ -113,7 +121,7 @@ impl SceneObject for Sphere {
 pub struct Plane {
     position: Vector3,
     normal: Vector3,
-    material: Arc<dyn RTMaterial>
+    material: Arc<dyn RTMaterial>,
 }
 
 impl Plane {
@@ -121,8 +129,8 @@ impl Plane {
         return Plane {
             position,
             normal,
-            material
-        }
+            material,
+        };
     }
 }
 
@@ -131,12 +139,12 @@ impl SceneObject for Plane {
         let pos = ray_plane_intersection(ray, self.position, self.normal);
         return match pos {
             Some(hit) => Some(HitData::new(hit, self.normal, self.material())),
-            None => None
-        }
+            None => None,
+        };
     }
 
     fn material(&self) -> Arc<dyn RTMaterial> {
-        return Arc::clone(&self.material)
+        return Arc::clone(&self.material);
     }
 
     fn update(&self, _dt: f32) {}
@@ -155,29 +163,33 @@ pub fn ray_plane_intersection(ray: &Ray, position: Vector3, normal: Vector3) -> 
     return None;
 }
 
-
 pub struct Quad {
     position: Vector3,
     u: Vector3,
     v: Vector3,
     w: Vector3,
     normal: Vector3,
-    material: Arc<dyn RTMaterial>
+    material: Arc<dyn RTMaterial>,
 }
 
 impl Quad {
     pub fn new(position: Vector3, u: Vector3, v: Vector3, material: Arc<dyn RTMaterial>) -> Quad {
         //println!("Normal {}", u.cross(v));
         let n = u.cross(v);
-        println!("Normal: ({}, {}, {})", n.normalized().x, n.normalized().y, n.normalized().z);
+        println!(
+            "Normal: ({}, {}, {})",
+            n.normalized().x,
+            n.normalized().y,
+            n.normalized().z
+        );
         return Quad {
             position,
             u,
             v,
-            w: n/n.dot(n),
+            w: n / n.dot(n),
             normal: n.normalized(),
-            material
-        }
+            material,
+        };
     }
 }
 
@@ -201,9 +213,9 @@ impl SceneObject for Quad {
                 } else {
                     None
                 }
-            },
-            None => None
-        }
+            }
+            None => None,
+        };
     }
 
     fn material(&self) -> Arc<dyn RTMaterial> {

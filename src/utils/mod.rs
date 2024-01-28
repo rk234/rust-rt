@@ -1,11 +1,14 @@
 use rand::Rng;
 use raylib::prelude::Vector3;
 
-
 pub fn rand_vec3() -> Vector3 {
     let mut rng = rand::thread_rng();
 
-    return Vector3::new(rng.gen_range(-1f32..=1f32), rng.gen_range(-1f32..=1f32), rng.gen_range(-1f32..=1f32));
+    return Vector3::new(
+        rng.gen_range(-1f32..=1f32),
+        rng.gen_range(-1f32..=1f32),
+        rng.gen_range(-1f32..=1f32),
+    );
 }
 
 pub fn rand_in_unit_sphere() -> Vector3 {
@@ -29,7 +32,7 @@ pub fn rand_in_hemisphere(normal: Vector3) -> Vector3 {
         vec
     } else {
         vec.scale_by(-1f32)
-    }
+    };
 }
 
 pub fn reflect(in_vec: Vector3, normal: Vector3) -> Vector3 {

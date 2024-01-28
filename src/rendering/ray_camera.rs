@@ -1,8 +1,8 @@
-use std::ops::Add;
+use crate::rendering::Ray;
 use rand::Rng;
 use raylib::drawing::RaylibDrawHandle;
 use raylib::math::Vector3;
-use crate::rendering::Ray;
+use std::ops::Add;
 
 pub struct RayCamera {
     pub position: Vector3,
@@ -64,7 +64,5 @@ impl RayCamera {
         return Ray::new(self.position, dir);
     }
 
-    pub fn handle_input(&self, _handle: &RaylibDrawHandle<'_>) {
-
-    }
+    pub fn handle_input(&self, _handle: &RaylibDrawHandle<'_>) {}
 }
