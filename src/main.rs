@@ -12,7 +12,6 @@ mod rendering;
 mod scene;
 mod utils;
 
-//noinspection SpellCheckingInspection
 fn main() {
     const HEIGHT: i32 = 500;
     const WIDTH: i32 = 16 * HEIGHT / 9;
@@ -178,7 +177,7 @@ fn main() {
 
 fn init_scene(scene: &mut Scene) {
     let white_diffuse_mat: Arc<dyn RTMaterial> = Arc::new(LambertianMaterial::new(Vector3::new(
-        0.8f32, 0.8f32, 0.8f32,
+        0.5f32, 0.5f32, 0.5f32,
     )));
     let red_diffuse_mat: Arc<dyn RTMaterial> =
         Arc::new(LambertianMaterial::new(Vector3::new(0.65, 0.05, 0.05)));
@@ -186,9 +185,11 @@ fn init_scene(scene: &mut Scene) {
         Arc::new(LambertianMaterial::new(Vector3::new(0.12, 0.45, 0.15)));
 
     let metal: Arc<dyn RTMaterial> =
-        Arc::new(MetalMaterial::new(Vector3::new(1.0, 1.0, 1.0), 0.2f32));
+        Arc::new(MetalMaterial::new(Vector3::new(1.0, 1.0, 1.0), 0.0));
     let light: Arc<dyn RTMaterial> =
-        Arc::new(EmissiveMaterial::new(Vector3::new(15.0, 15.0, 15.0)));
+        Arc::new(EmissiveMaterial::new(
+            Vector3::new(255.0, 225.0, 143.0)*40.0/255.0
+        ));
 
     let bottom: Box<dyn SceneObject> = Box::new(Quad::new(
         Vector3::new(-2.0, 0.0, 1.0),
@@ -221,17 +222,17 @@ fn init_scene(scene: &mut Scene) {
         Arc::clone(&white_diffuse_mat),
     ));
     let light_quad: Box<dyn SceneObject> = Box::new(Quad::new(
-        Vector3::new(-0.5, 3.999, 2.5),
-        Vector3::new(1.0, 0.0, 0.0),
-        Vector3::new(0.0, 0.0, 1.0),
+        Vector3::new(-0.375, 3.999, 2.5-0.375),
+        Vector3::new(0.75, 0.0, 0.0),
+        Vector3::new(0.0, 0.0, 0.75),
         Arc::clone(&light),
     ));
 
     let bounce_wall: Box<dyn SceneObject> = Box::new(Quad::new(
-        Vector3::new(-8.0, -4.0, 0.0),
-        Vector3::new(12.0, 0.0, 0.0),
-        Vector3::new(0.0, 12.0, 0.0),
-        Arc::clone(&white_diffuse_mat),
+        Vector3::new(-100.0, -100.0, 0.0),
+        Vector3::new(1000.0, 0.0, 0.0),
+        Vector3::new(0.0, 1000.0, 0.0),
+        Arc::clone(&metal),
     ));
 
     let sphere_a: Box<dyn SceneObject> = Box::new(Sphere::new(
