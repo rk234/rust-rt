@@ -1,6 +1,6 @@
 use crate::rendering;
 use crate::rendering::{Framebuffer, RTMaterial, RayCamera};
-use crate::scene::Scene;
+use crate::scene::models::Scene;
 use raylib::math::Vector3;
 use rayon::iter::{IndexedParallelIterator, IntoParallelRefMutIterator, ParallelIterator};
 

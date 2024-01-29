@@ -3,10 +3,11 @@ use rendering::Framebuffer;
 use rendering::RayCamera;
 use rendering::Renderer;
 use rendering::{EmissiveMaterial, LambertianMaterial, MetalMaterial, RTMaterial};
-use scene::Scene;
+use scene::models::{Scene, SceneObject};
+use scene::sphere::Sphere;
 use std::{ffi::CString, sync::Arc};
 
-use crate::scene::{Quad, SceneObject, Sphere};
+use scene::quad::Quad;
 
 mod rendering;
 mod scene;
@@ -184,12 +185,10 @@ fn init_scene(scene: &mut Scene) {
     let green_diffuse_mat: Arc<dyn RTMaterial> =
         Arc::new(LambertianMaterial::new(Vector3::new(0.12, 0.45, 0.15)));
 
-    let metal: Arc<dyn RTMaterial> =
-        Arc::new(MetalMaterial::new(Vector3::new(1.0, 1.0, 1.0), 0.0));
-    let light: Arc<dyn RTMaterial> =
-        Arc::new(EmissiveMaterial::new(
-            Vector3::new(255.0, 225.0, 143.0)*40.0/255.0
-        ));
+    let metal: Arc<dyn RTMaterial> = Arc::new(MetalMaterial::new(Vector3::new(1.0, 1.0, 1.0), 0.0));
+    let light: Arc<dyn RTMaterial> = Arc::new(EmissiveMaterial::new(
+        Vector3::new(255.0, 225.0, 143.0) * 40.0 / 255.0,
+    ));
 
     let bottom: Box<dyn SceneObject> = Box::new(Quad::new(
         Vector3::new(-2.0, 0.0, 1.0),
@@ -222,7 +221,7 @@ fn init_scene(scene: &mut Scene) {
         Arc::clone(&white_diffuse_mat),
     ));
     let light_quad: Box<dyn SceneObject> = Box::new(Quad::new(
-        Vector3::new(-0.375, 3.999, 2.5-0.375),
+        Vector3::new(-0.375, 3.999, 2.5 - 0.375),
         Vector3::new(0.75, 0.0, 0.0),
         Vector3::new(0.0, 0.0, 0.75),
         Arc::clone(&light),
@@ -232,7 +231,7 @@ fn init_scene(scene: &mut Scene) {
         Vector3::new(-100.0, -100.0, 0.0),
         Vector3::new(1000.0, 0.0, 0.0),
         Vector3::new(0.0, 1000.0, 0.0),
-        Arc::clone(&metal),
+        Arc::clone(&white_diffuse),
     ));
 
     let sphere_a: Box<dyn SceneObject> = Box::new(Sphere::new(
