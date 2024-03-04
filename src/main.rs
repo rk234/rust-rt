@@ -185,7 +185,7 @@ fn init_scene(scene: &mut Scene) {
     let green_diffuse_mat: Arc<dyn RTMaterial> =
         Arc::new(LambertianMaterial::new(Vector3::new(0.12, 0.45, 0.15)));
 
-    let metal: Arc<dyn RTMaterial> = Arc::new(MetalMaterial::new(Vector3::new(1.0, 1.0, 1.0), 0.0));
+    let metal: Arc<dyn RTMaterial> = Arc::new(MetalMaterial::new(Vector3::new(1.0, 1.0, 1.0), 0.2));
     let light: Arc<dyn RTMaterial> = Arc::new(EmissiveMaterial::new(
         Vector3::new(255.0, 225.0, 143.0) * 40.0 / 255.0,
     ));
@@ -231,7 +231,7 @@ fn init_scene(scene: &mut Scene) {
         Vector3::new(-100.0, -100.0, 0.0),
         Vector3::new(1000.0, 0.0, 0.0),
         Vector3::new(0.0, 1000.0, 0.0),
-        Arc::clone(&white_diffuse),
+        Arc::clone(&white_diffuse_mat),
     ));
 
     let sphere_a: Box<dyn SceneObject> = Box::new(Sphere::new(

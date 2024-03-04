@@ -25,11 +25,52 @@ impl Renderer<'_> {
         self.num_samples = 0;
     }
 
+    pub fn render_normals(
+        &mut self,
+        width: usize,
+        height: usize,
+        normal_buffer: &mut Framebuffer,
+        camera: &mut RayCamera
+    ) {
+        camera.update_viewport(width, height);
+
+        normal_buffer
+            .data
+            .par_iter_mut()
+            .enumerate()
+            .for_each(|(i, normal)| {
+                let x = i % width;
+                let y = i / width;
+                let ray = camera.gen_primary_ray(x, y, width, height);
+
+                let hit_opt = self.scene.intersect(&ray);
+                match hit_opt {
+                    Some(hit) => {
+                        *normal = hit.normal;
+                    }
+                    None => {
+                        *normal = Vector3::new(0.0, 0.0, 0.0)
+                    }
+                }
+            })
+    }
+
+    pub fn render_object_mask(
+        &mut self,
+        width: usize,
+        height: usize,
+        mask_buffer: &mut Framebuffer,
+        camera: &mut RayCamera
+    ) {
+        todo!()
+    }
+
     pub fn render_sample(
         &mut self,
         width: usize,
         height: usize,
         frame_buffer: &mut Framebuffer,
+        //snormal_buffer: &mut Framebuffer,
         camera: &mut RayCamera,
     ) {
         camera.update_viewport(width, height);
@@ -65,7 +106,7 @@ impl Renderer<'_> {
                 let attenuation = material.attenuation(position, normal);
                 let emissive = material.emissive(position, normal);
 
-                return match scatter {
+                match scatter {
                     Some(scatter_ray) => attenuation * self.cast(scatter_ray, depth - 1),
                     None => {
                         if emissive {
@@ -74,7 +115,7 @@ impl Renderer<'_> {
                             Vector3::new(0f32, 0f32, 0f32)
                         }
                     }
-                };
+                }
             }
             None => Vector3::new(0.0, 0.0, 0.0), //sky_color(ray)
         }
