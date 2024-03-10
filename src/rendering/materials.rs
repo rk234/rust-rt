@@ -20,13 +20,13 @@ pub struct LambertianMaterial {
 
 impl LambertianMaterial {
     pub fn new(albedo: Vector3) -> LambertianMaterial {
-        return LambertianMaterial { albedo };
+        LambertianMaterial { albedo }
     }
 }
 
 impl RTMaterial for LambertianMaterial {
     fn attenuation(&self, _: Vector3, _: Vector3) -> Vector3 {
-        return self.albedo;
+        self.albedo
     }
 
     fn scatter(
@@ -35,10 +35,10 @@ impl RTMaterial for LambertianMaterial {
         position: Vector3,
         normal: Vector3,
     ) -> Option<rendering::Ray> {
-        return Some(rendering::Ray::new(
+        Some(rendering::Ray::new(
             position,
             normal + rand_in_hemisphere(normal),
-        ));
+        ))
     }
 
     fn emissive(&self, _: Vector3, _: Vector3) -> bool {
@@ -52,7 +52,7 @@ pub struct EmissiveMaterial {
 
 impl EmissiveMaterial {
     pub fn new(emit: Vector3) -> EmissiveMaterial {
-        return EmissiveMaterial { emit };
+        EmissiveMaterial { emit }
     }
 }
 
@@ -77,13 +77,13 @@ pub struct MetalMaterial {
 
 impl MetalMaterial {
     pub fn new(albedo: Vector3, roughness: f32) -> MetalMaterial {
-        return MetalMaterial { roughness, albedo };
+        MetalMaterial { roughness, albedo }
     }
 }
 
 impl RTMaterial for MetalMaterial {
     fn attenuation(&self, _position: Vector3, _normal: Vector3) -> Vector3 {
-        return self.albedo;
+        self.albedo
     }
 
     fn scatter(
@@ -92,13 +92,13 @@ impl RTMaterial for MetalMaterial {
         position: Vector3,
         normal: Vector3,
     ) -> Option<rendering::Ray> {
-        return Some(rendering::Ray::new(
+        Some(rendering::Ray::new(
             position + (normal * EPSILON),
             reflect(in_ray.direction, normal) + (rand_unit_vec() * self.roughness),
-        ));
+        ))
     }
 
     fn emissive(&self, _position: Vector3, _normal: Vector3) -> bool {
-        return false;
+        false
     }
 }
