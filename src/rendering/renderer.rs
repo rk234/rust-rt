@@ -30,7 +30,7 @@ impl Renderer<'_> {
         width: usize,
         height: usize,
         normal_buffer: &mut Framebuffer,
-        camera: &mut RayCamera
+        camera: &mut RayCamera,
     ) {
         camera.update_viewport(width, height);
 
@@ -48,9 +48,7 @@ impl Renderer<'_> {
                     Some(hit) => {
                         *normal = hit.normal;
                     }
-                    None => {
-                        *normal = Vector3::new(0.0, 0.0, 0.0)
-                    }
+                    None => *normal = Vector3::new(0.0, 0.0, 0.0),
                 }
             })
     }
@@ -60,7 +58,7 @@ impl Renderer<'_> {
         width: usize,
         height: usize,
         mask_buffer: &mut Framebuffer,
-        camera: &mut RayCamera
+        camera: &mut RayCamera,
     ) {
         todo!()
     }
@@ -117,7 +115,7 @@ impl Renderer<'_> {
                     }
                 }
             }
-            None => Vector3::new(0.0, 0.0, 0.0), //sky_color(ray)
+            None => sky_color(&ray), // None => Vector3::new(0.0, 0.0, 0.0), //sky_color(ray)
         }
     }
 
@@ -141,7 +139,7 @@ impl Renderer<'_> {
     }
 }
 
-fn sky_color(ray: rendering::Ray) -> Vector3 {
+fn sky_color(ray: &rendering::Ray) -> Vector3 {
     let t = 0.5f32 * (ray.direction.y + 1.0f32);
     return Vector3::new(
         (1f32 - t) + (t * 138f32 / 255f32),

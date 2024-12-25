@@ -9,11 +9,9 @@ edition = "2021"
 debug = true
 
 [dependencies]
+rand = "0.8.5"
+rayon = "1.10.0"
 [dependencies.raylib]
 version = "4.5.0"
 git = "https://github.com/litten2up/raylib-rs"
 branch = "4.5.0"
-[dependencies.rand]
-rand = "0.8.5"
-[dependencies.rayon]
-rayon = "1.8"

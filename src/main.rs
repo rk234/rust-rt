@@ -1,17 +1,14 @@
 use raylib::prelude::*;
-use rendering::Framebuffer;
-use rendering::RayCamera;
-use rendering::Renderer;
-use rendering::{EmissiveMaterial, LambertianMaterial, MetalMaterial, RTMaterial};
-use scene::models::{Scene, SceneObject};
-use scene::sphere::Sphere;
+use rust_rt::rendering::Framebuffer;
+use rust_rt::rendering::RayCamera;
+use rust_rt::rendering::Renderer;
+use rust_rt::rendering::{EmissiveMaterial, LambertianMaterial, MetalMaterial, RTMaterial};
+use rust_rt::scene::models::{Scene, SceneObject};
+use rust_rt::scene::sphere::Sphere;
+use rust_rt::scene::Plane;
 use std::{ffi::CString, sync::Arc};
 
-use scene::quad::Quad;
-
-mod rendering;
-mod scene;
-mod utils;
+use rust_rt::scene::quad::Quad;
 
 fn main() {
     const HEIGHT: i32 = 500;
@@ -32,7 +29,7 @@ fn main() {
     let mut framebuf = Framebuffer::new(WIDTH as usize, HEIGHT as usize);
     let mut scene = Scene::new();
 
-    init_scene(&mut scene);
+    init_sphere_scene(&mut scene);
 
     let mut renderer = Renderer::new(&scene);
 
@@ -133,50 +130,77 @@ fn main() {
             1f32,
         );
 
-        if d.is_mouse_button_down(MouseButton::MOUSE_BUTTON_LEFT) {
-            let mut dx = -d.get_mouse_delta().x;
-            let mut dy = -d.get_mouse_delta().y;
-
-            let sensitivity = 0.3f32;
-            dx *= sensitivity;
-            dy *= sensitivity;
-
-            cam.yaw += dx;
-            cam.pitch += dy;
-
-            if cam.pitch > 89.0 {
-                cam.pitch = 89.0;
-            }
-            if cam.pitch < -89.0 {
-                cam.pitch = -89.0;
-            }
-
-            cam.direction = Vector3::new(
-                cam.yaw.to_radians().cos() * cam.pitch.to_radians().cos(),
-                cam.pitch.to_radians().sin(),
-                cam.yaw.to_radians().sin() * cam.pitch.to_radians().cos(),
-            );
-        }
-
-        if d.is_key_down(KeyboardKey::KEY_W) {
-            cam.position += cam.direction * 0.05;
-        }
-        if d.is_key_down(KeyboardKey::KEY_S) {
-            cam.position -= cam.direction * 0.05;
-        }
-        if d.is_key_down(KeyboardKey::KEY_A) {
-            cam.position -= Vector3::new(0.0, 1.0, 0.0).cross(cam.direction) * 0.05;
-        }
-        if d.is_key_down(KeyboardKey::KEY_D) {
-            cam.position += Vector3::new(0.0, 1.0, 0.0).cross(cam.direction) * 0.05;
-        }
+        handle_input(&mut d, &mut cam);
 
         prev_s_width = s_width;
         prev_s_height = s_height;
     }
 }
 
-fn init_scene(scene: &mut Scene) {
+fn handle_input(d: &RaylibDrawHandle<'_>, cam: &mut RayCamera) {
+    if d.is_key_down(KeyboardKey::KEY_W) {
+        cam.position += cam.direction * 0.05;
+    }
+    if d.is_key_down(KeyboardKey::KEY_S) {
+        cam.position -= cam.direction * 0.05;
+    }
+    if d.is_key_down(KeyboardKey::KEY_A) {
+        cam.position -= Vector3::new(0.0, 1.0, 0.0).cross(cam.direction) * 0.05;
+    }
+    if d.is_key_down(KeyboardKey::KEY_D) {
+        cam.position += Vector3::new(0.0, 1.0, 0.0).cross(cam.direction) * 0.05;
+    }
+
+    if d.is_mouse_button_down(MouseButton::MOUSE_BUTTON_LEFT) {
+        let mut dx = -d.get_mouse_delta().x;
+        let mut dy = -d.get_mouse_delta().y;
+
+        let sensitivity = 0.3f32;
+        dx *= sensitivity;
+        dy *= sensitivity;
+
+        cam.yaw += dx;
+        cam.pitch += dy;
+
+        if cam.pitch > 89.0 {
+            cam.pitch = 89.0;
+        }
+        if cam.pitch < -89.0 {
+            cam.pitch = -89.0;
+        }
+
+        cam.direction = Vector3::new(
+            cam.yaw.to_radians().cos() * cam.pitch.to_radians().cos(),
+            cam.pitch.to_radians().sin(),
+            cam.yaw.to_radians().sin() * cam.pitch.to_radians().cos(),
+        );
+    }
+}
+
+fn init_sphere_scene(scene: &mut Scene) {
+    let white_diffuse_mat: Arc<dyn RTMaterial> = Arc::new(LambertianMaterial::new(Vector3::new(
+        0.5f32, 0.5f32, 0.5f32,
+    )));
+    let red_diffuse_mat: Arc<dyn RTMaterial> =
+        Arc::new(LambertianMaterial::new(Vector3::new(0.65, 0.05, 0.05)));
+
+    let bottom_plane: Box<dyn SceneObject> = Box::new(Plane::new(
+        Vector3::new(0.0, 0.0, 0.0),
+        Vector3::new(0.0, 1.0, 0.0),
+        Arc::clone(&white_diffuse_mat),
+    ));
+
+    let sphere_b: Box<dyn SceneObject> = Box::new(Sphere::new(
+        Vector3::new(0.0, 0.75, 3.0),
+        0.75,
+        Arc::clone(&red_diffuse_mat),
+    ));
+
+    scene.add_object(bottom_plane);
+    scene.add_object(sphere_b);
+}
+
+fn init_box_scene(scene: &mut Scene) {
     let white_diffuse_mat: Arc<dyn RTMaterial> = Arc::new(LambertianMaterial::new(Vector3::new(
         0.5f32, 0.5f32, 0.5f32,
     )));
