@@ -9,7 +9,7 @@ pub const EPSILON: f32 = 0.0001f32;
 pub struct Renderer<'a> {
     pub num_samples: u32,
     scene: &'a Scene,
-    num_bounces: u32,
+    num_bounces: i32,
 }
 
 impl Renderer<'_> {
@@ -17,7 +17,7 @@ impl Renderer<'_> {
         return Renderer {
             num_samples: 0,
             scene,
-            num_bounces: 4,
+            num_bounces: 10,
         };
     }
 
@@ -82,10 +82,48 @@ impl Renderer<'_> {
                 let y = i / width;
                 let ray = camera.gen_primary_ray(x, y, width, height);
 
-                *pixel += self.cast(ray, self.num_bounces as i32);
+                *pixel += self.cast_iter(ray, self.num_bounces as i32);
             });
 
         self.num_samples += 1;
+    }
+
+    fn cast_iter(&self, ray: rendering::Ray, depth: i32) -> Vector3 {
+        let mut result = Vector3::new(1f32, 1f32, 1f32);
+        let mut current_ray = ray;
+
+        for _ in 0..depth {
+            let hit = self.scene.intersect(&current_ray);
+            match hit {
+                Some(hit_data) => {
+                    let material = hit_data.material;
+                    let position = hit_data.position;
+                    let normal = hit_data.normal;
+
+                    let scatter =
+                        material.scatter(current_ray, position + (normal * EPSILON), normal);
+                    let attenuation = material.attenuation(position, normal);
+                    let emissive = material.emissive(position, normal);
+
+                    match scatter {
+                        Some(scatter_ray) => {
+                            result *= attenuation;
+                            current_ray = scatter_ray;
+                        }
+                        None => {
+                            if emissive {
+                                return result * attenuation;
+                            } else {
+                                return Vector3::new(0f32, 0f32, 0f32);
+                            }
+                        }
+                    }
+                }
+                None => return result * sky_color(&current_ray), // None => Vector3::new(0.0, 0.0, 0.0), //sky_color(ray)
+            }
+        }
+
+        return Vector3::new(0f32, 0f32, 0f32);
     }
 
     fn cast(&self, ray: rendering::Ray, depth: i32) -> Vector3 {
