@@ -29,7 +29,7 @@ fn main() {
     let mut framebuf = Framebuffer::new(WIDTH as usize, HEIGHT as usize);
     let mut scene = Scene::new();
 
-    init_sphere_scene(&mut scene);
+    init_box_scene(&mut scene);
 
     let mut renderer = Renderer::new(&scene);
 

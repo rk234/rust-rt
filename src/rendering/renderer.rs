@@ -108,7 +108,8 @@ impl Renderer<'_> {
                     match scatter {
                         Some(scatter_ray) => {
                             result *= attenuation;
-                            current_ray = scatter_ray;
+                            current_ray.origin = scatter_ray.origin;
+                            current_ray.direction = scatter_ray.direction;
                         }
                         None => {
                             if emissive {
