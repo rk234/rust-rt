@@ -6,6 +6,7 @@ use rust_rt::rendering::{EmissiveMaterial, LambertianMaterial, MetalMaterial, RT
 use rust_rt::scene::models::{Scene, SceneObject};
 use rust_rt::scene::sphere::Sphere;
 use rust_rt::scene::Plane;
+use rust_rt::scene::Triangle;
 use std::{ffi::CString, sync::Arc};
 
 use rust_rt::scene::quad::Quad;
@@ -29,7 +30,7 @@ fn main() {
     let mut framebuf = Framebuffer::new(WIDTH as usize, HEIGHT as usize);
     let mut scene = Scene::new();
 
-    init_box_scene(&mut scene);
+    init_sphere_scene(&mut scene);
 
     let mut renderer = Renderer::new(&scene);
 
@@ -196,8 +197,17 @@ fn init_sphere_scene(scene: &mut Scene) {
         Arc::clone(&red_diffuse_mat),
     ));
 
+    let verts = [
+        Vector3::new(0.0, 0.0, 0.0),
+        Vector3::new(1.0, 1.0, 1.0),
+        Vector3::new(5.0, 0.0, 0.0),
+    ];
+
+    let triangle = Box::new(Triangle::new(verts, white_diffuse_mat));
+
     scene.add_object(bottom_plane);
     scene.add_object(sphere_b);
+    scene.add_object(triangle);
 }
 
 fn init_box_scene(scene: &mut Scene) {
