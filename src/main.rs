@@ -1,12 +1,14 @@
 use raylib::prelude::*;
+use rust_rt::math::Transform;
 use rust_rt::rendering::Framebuffer;
 use rust_rt::rendering::RayCamera;
 use rust_rt::rendering::Renderer;
 use rust_rt::rendering::{EmissiveMaterial, LambertianMaterial, MetalMaterial, RTMaterial};
+use rust_rt::scene::mesh::Mesh;
 use rust_rt::scene::models::{Scene, SceneObject};
 use rust_rt::scene::sphere::Sphere;
 use rust_rt::scene::Plane;
-use rust_rt::scene::Triangle;
+use std::f32::consts::PI;
 use std::{ffi::CString, sync::Arc};
 
 use rust_rt::scene::quad::Quad;
@@ -14,7 +16,7 @@ use rust_rt::scene::quad::Quad;
 fn main() {
     const HEIGHT: i32 = 500;
     const WIDTH: i32 = 16 * HEIGHT / 9;
-    let mut res_scale: f32 = 0.8f32;
+    let mut res_scale: f32 = 0.2f32;
 
     let (mut rl, thread) = init()
         .size(WIDTH, HEIGHT)
@@ -199,17 +201,17 @@ fn init_sphere_scene(scene: &mut Scene) {
         Arc::clone(&red_diffuse_mat),
     ));
 
-    // let verts = [
-    //     Vector3::new(0.0, 0.0, 5.0),
-    //     Vector3::new(1.0, 1.0, 6.0),
-    //     Vector3::new(5.0, 0.0, 5.0),
-    // ];
-    //
-    // let triangle = Box::new(Triangle::new(verts, metal_mat));
+    let t = Matrix::translate(-1f32, -2f32, 10f32);
 
-    scene.add_object(bottom_plane);
-    scene.add_object(sphere_b);
-    // scene.add_object(triangle);
+    let mut cube = Mesh::new(
+        Transform::new(Matrix::rotate_y(PI) * Matrix::scale(50f32, 50f32, 50f32) * t),
+        Arc::clone(&white_diffuse_mat),
+    );
+    cube.load_obj("models/bunny.obj");
+
+    // scene.add_object(bottom_plane);
+    // scene.add_object(sphere_b);
+    scene.add_object(Box::new(cube));
 }
 
 fn init_box_scene(scene: &mut Scene) {

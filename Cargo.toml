@@ -11,6 +11,7 @@ debug = true
 [dependencies]
 rand = "0.8.5"
 rayon = "1.10.0"
+wavefront_obj = "11.0.0"
 [dependencies.raylib]
 version = "4.5.0"
 git = "https://github.com/litten2up/raylib-rs"

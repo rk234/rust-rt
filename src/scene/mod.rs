@@ -1,4 +1,6 @@
 pub mod aabb;
+pub mod bvh;
+pub mod mesh;
 pub mod models;
 pub mod plane;
 pub mod quad;

@@ -1,6 +1,8 @@
 use raylib::math::Vector3;
 use std::ops::Add;
 
+use crate::math::Transform;
+
 pub struct Ray {
     pub origin: Vector3,
     pub direction: Vector3,
@@ -24,5 +26,15 @@ impl Ray {
 
     pub fn at(&self, t: f32) -> Vector3 {
         return self.origin.add(self.direction.scale_by(t));
+    }
+
+    pub fn transform(&self, t: &Transform) -> Self {
+        Self {
+            origin: self.origin.transform_with(t.inv),
+            direction: self
+                .direction
+                .transform_with(t.inv.transposed())
+                .normalized(),
+        }
     }
 }
