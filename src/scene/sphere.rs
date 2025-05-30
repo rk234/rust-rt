@@ -35,6 +35,7 @@ impl SceneObject for Sphere {
                 Some(HitData::new(
                     ray.at(t),
                     (ray.at(t) - self.position).normalized(),
+                    Vector3::zero(),
                     self.material(),
                 ))
             } else {

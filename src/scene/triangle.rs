@@ -33,37 +33,40 @@ impl SceneObject for Triangle {
     fn intersect(&self, ray: &Ray) -> Option<HitData> {
         let edge1 = self.verts[1] - self.verts[0];
         let edge2 = self.verts[2] - self.verts[0];
+        let normal = edge1.cross(edge2).normalized();
+        let pvec = ray.direction.cross(edge2);
+        let det = edge1.dot(pvec);
 
-        let ray_cross_e2 = ray.direction.cross(edge2);
-        let det = edge1.dot(ray_cross_e2);
-
-        if det > -EPSILON && det < EPSILON {
+        if det < EPSILON {
             return None;
         }
 
-        let inv_det = 1.0 / det;
-        let s = ray.origin - self.verts[0];
-        let u = inv_det * s.dot(ray_cross_e2);
+        let inv_det = 1f32 / det;
+        let tvec = ray.origin - self.verts[0];
+        let u = tvec.dot(pvec) * inv_det;
 
-        if (u < 0.0 && u.abs() > EPSILON) || ((u > 1.0) && (u - 1.0).abs() > EPSILON) {
+        if u < 0f32 || u > 1f32 {
             return None;
         }
 
-        let s_cross_e1 = s.cross(edge1);
-        let v = inv_det * ray.direction.dot(s_cross_e1);
-        if (v < 0.0 && v.abs() > EPSILON) || (u + v > 1.0 && (u + v - 1.0).abs() > EPSILON) {
+        let qvec = tvec.cross(edge1);
+        let v = ray.direction.dot(qvec) * inv_det;
+        if v < 0f32 || u + v > 1f32 {
             return None;
         }
 
-        let t = inv_det * edge2.dot(s_cross_e1);
+        let t = edge2.dot(qvec) * inv_det;
 
-        if t > EPSILON {
-            let p = ray.origin + ray.direction.scale_by(t);
-            let n = edge1.cross(edge2).normalized();
-            return Some(HitData::new(p, n, Arc::clone(&self.material)));
-        } else {
+        if t < 0f32 {
             return None;
         }
+
+        Some(HitData::new(
+            ray.origin + ray.direction.scale_by(t),
+            normal,
+            Vector3::new(u, v, 1f32 - u - v),
+            Arc::clone(&self.material),
+        ))
     }
 
     fn material(&self) -> Arc<dyn RTMaterial> {

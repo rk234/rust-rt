@@ -49,7 +49,12 @@ impl SceneObject for Quad {
                         self.normal
                     };
 
-                    Some(HitData::new(p, norm, Arc::clone(&self.material)))
+                    Some(HitData::new(
+                        p,
+                        norm,
+                        Vector3::zero(),
+                        Arc::clone(&self.material),
+                    ))
                 } else {
                     None
                 }

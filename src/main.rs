@@ -185,6 +185,8 @@ fn init_sphere_scene(scene: &mut Scene) {
     let red_diffuse_mat: Arc<dyn RTMaterial> =
         Arc::new(LambertianMaterial::new(Vector3::new(0.65, 0.05, 0.05)));
 
+    let metal_mat = Arc::new(MetalMaterial::new(Vector3::one(), 0.1));
+
     let bottom_plane: Box<dyn SceneObject> = Box::new(Plane::new(
         Vector3::new(0.0, 0.0, 0.0),
         Vector3::new(0.0, 1.0, 0.0),
@@ -197,17 +199,17 @@ fn init_sphere_scene(scene: &mut Scene) {
         Arc::clone(&red_diffuse_mat),
     ));
 
-    let verts = [
-        Vector3::new(0.0, 0.0, 0.0),
-        Vector3::new(1.0, 1.0, 1.0),
-        Vector3::new(5.0, 0.0, 0.0),
-    ];
-
-    let triangle = Box::new(Triangle::new(verts, white_diffuse_mat));
+    // let verts = [
+    //     Vector3::new(0.0, 0.0, 5.0),
+    //     Vector3::new(1.0, 1.0, 6.0),
+    //     Vector3::new(5.0, 0.0, 5.0),
+    // ];
+    //
+    // let triangle = Box::new(Triangle::new(verts, metal_mat));
 
     scene.add_object(bottom_plane);
     scene.add_object(sphere_b);
-    scene.add_object(triangle);
+    // scene.add_object(triangle);
 }
 
 fn init_box_scene(scene: &mut Scene) {

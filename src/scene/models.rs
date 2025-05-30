@@ -46,14 +46,21 @@ impl Scene {
 pub struct HitData {
     pub position: Vector3,
     pub normal: Vector3,
+    pub bary: Vector3,
     pub material: Arc<dyn RTMaterial>,
 }
 
 impl HitData {
-    pub fn new(position: Vector3, normal: Vector3, material: Arc<dyn RTMaterial>) -> HitData {
+    pub fn new(
+        position: Vector3,
+        normal: Vector3,
+        bary: Vector3,
+        material: Arc<dyn RTMaterial>,
+    ) -> HitData {
         HitData {
             position,
             normal,
+            bary,
             material,
         }
     }

@@ -23,7 +23,12 @@ impl SceneObject for Plane {
     fn intersect(&self, ray: &Ray) -> Option<HitData> {
         let pos = ray_plane_intersection(ray, self.position, self.normal);
         return match pos {
-            Some(hit) => Some(HitData::new(hit, self.normal, self.material())),
+            Some(hit) => Some(HitData::new(
+                hit,
+                self.normal,
+                Vector3::zero(),
+                self.material(),
+            )),
             None => None,
         };
     }
