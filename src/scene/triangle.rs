@@ -9,6 +9,16 @@ pub struct Triangle {
     pub uvs: Option<[Vector2; 3]>,
 }
 
+impl Clone for Triangle {
+    fn clone(&self) -> Self {
+        Triangle {
+            verts: self.verts,
+            normals: self.normals,
+            uvs: self.uvs,
+        }
+    }
+}
+
 pub struct TriangleHitData {
     pub p: Vector3,
     pub normal: Vector3,
