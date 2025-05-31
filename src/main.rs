@@ -77,8 +77,13 @@ fn main() {
         }
 
         if continue_rendering {
-            renderer.render_sample(framebuf.width, framebuf.height, &mut framebuf, &mut cam);
-            tex.update_texture(&framebuf.to_bytes_s(renderer.num_samples as f32));
+            if rl.is_key_down(KeyboardKey::KEY_N) {
+                renderer.render_normals(framebuf.width, framebuf.height, &mut framebuf, &mut cam);
+                tex.update_texture(&framebuf.to_bytes());
+            } else {
+                renderer.render_sample(framebuf.width, framebuf.height, &mut framebuf, &mut cam);
+                tex.update_texture(&framebuf.to_bytes_s(renderer.num_samples as f32));
+            }
         }
 
         let fps = rl.get_fps();

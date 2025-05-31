@@ -1,6 +1,6 @@
 use std::{fs, sync::Arc};
 
-use raylib::math::Vector3;
+use raylib::math::{Vector2, Vector3};
 use wavefront_obj::obj;
 
 use crate::{
@@ -40,14 +40,15 @@ impl Mesh {
                             .flat_map(|g| {
                                 g.shapes.iter().filter_map(|s| match s.primitive {
                                     obj::Primitive::Triangle(
-                                        (v0, _, _),
-                                        (v1, _, _),
-                                        (v2, _, _),
+                                        (v0, t0, n0),
+                                        (v1, t1, n1),
+                                        (v2, t2, n2),
                                     ) => {
                                         let v0 = obj.vertices[v0];
                                         let v1 = obj.vertices[v1];
                                         let v2 = obj.vertices[v2];
-                                        Some(Triangle {
+
+                                        let mut tri = Triangle {
                                             uvs: None,
                                             normals: None,
                                             verts: [
@@ -55,7 +56,61 @@ impl Mesh {
                                                 Vector3::new(v1.x as f32, v1.y as f32, v1.z as f32),
                                                 Vector3::new(v2.x as f32, v2.y as f32, v2.z as f32),
                                             ],
-                                        })
+                                        };
+
+                                        match (t0, t1, t2) {
+                                            (Some(t0), Some(t1), Some(t2)) => {
+                                                let t0 = obj.tex_vertices[t0];
+                                                let t1 = obj.tex_vertices[t1];
+                                                let t2 = obj.tex_vertices[t2];
+                                                tri.uvs = Some([
+                                                    Vector3::new(
+                                                        t0.u as f32,
+                                                        t0.v as f32,
+                                                        t0.w as f32,
+                                                    ),
+                                                    Vector3::new(
+                                                        t1.u as f32,
+                                                        t1.v as f32,
+                                                        t1.w as f32,
+                                                    ),
+                                                    Vector3::new(
+                                                        t2.u as f32,
+                                                        t2.v as f32,
+                                                        t2.w as f32,
+                                                    ),
+                                                ])
+                                            }
+                                            _ => {}
+                                        }
+
+                                        match (n0, n1, n2) {
+                                            (Some(n0), Some(n1), Some(n2)) => {
+                                                let n0 = obj.normals[n0];
+                                                let n1 = obj.normals[n1];
+                                                let n2 = obj.normals[n2];
+                                                tri.normals = Some([
+                                                    Vector3::new(
+                                                        n0.x as f32,
+                                                        n0.y as f32,
+                                                        n0.z as f32,
+                                                    ),
+                                                    Vector3::new(
+                                                        n1.x as f32,
+                                                        n1.y as f32,
+                                                        n1.z as f32,
+                                                    ),
+                                                    Vector3::new(
+                                                        n2.x as f32,
+                                                        n2.y as f32,
+                                                        n2.z as f32,
+                                                    ),
+                                                ])
+                                            }
+                                            _ => {}
+                                        }
+
+                                        Some(tri)
                                     }
                                     _ => None,
                                 })

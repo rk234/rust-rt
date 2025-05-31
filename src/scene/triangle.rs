@@ -6,7 +6,7 @@ use raylib::{math::Vector2, math::Vector3};
 pub struct Triangle {
     pub verts: [Vector3; 3],
     pub normals: Option<[Vector3; 3]>,
-    pub uvs: Option<[Vector2; 3]>,
+    pub uvs: Option<[Vector3; 3]>,
 }
 
 impl Clone for Triangle {
@@ -32,7 +32,7 @@ impl TriangleHitData {
 }
 
 impl Triangle {
-    pub fn new(verts: [Vector3; 3], normals: [Vector3; 3], uvs: [Vector2; 3]) -> Triangle {
+    pub fn new(verts: [Vector3; 3], normals: [Vector3; 3], uvs: [Vector3; 3]) -> Triangle {
         return Triangle {
             verts,
             normals: Some(normals),
@@ -81,9 +81,15 @@ impl Triangle {
             return None;
         }
 
+        let n = if let Some(normals) = self.normals {
+            (normals[0] * u) + (normals[1] * v) + (normals[2] * (1f32 - u - v))
+        } else {
+            normal
+        };
+
         Some(TriangleHitData::new(
             ray.origin + ray.direction.scale_by(t),
-            normal,
+            n,
             Vector3::new(u, v, 1f32 - u - v),
         ))
     }
