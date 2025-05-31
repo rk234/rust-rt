@@ -45,8 +45,37 @@ impl Renderer<'_> {
 
                 let hit_opt = self.scene.intersect(&ray);
                 match hit_opt {
-                    Some(hit) => {
+                    Some((_, hit)) => {
                         *normal = hit.normal;
+                    }
+                    None => *normal = Vector3::new(0.0, 0.0, 0.0),
+                }
+            })
+    }
+    pub fn render_bvh_hits(
+        &mut self,
+        width: usize,
+        height: usize,
+        hit_buffer: &mut Framebuffer,
+        camera: &mut RayCamera,
+    ) {
+        camera.update_viewport(width, height);
+
+        hit_buffer
+            .data
+            .par_iter_mut()
+            .enumerate()
+            .for_each(|(i, normal)| {
+                let x = i % width;
+                let y = i / width;
+                let ray = camera.gen_primary_ray(x, y, width, height);
+
+                let hit_opt = self.scene.intersect(&ray);
+                match hit_opt {
+                    Some((_, hit)) => {
+                        let s = hit.node_hits as f32 / 10f32;
+                        let hits = Vector3::new(s, s, s);
+                        *normal = hits;
                     }
                     None => *normal = Vector3::new(0.0, 0.0, 0.0),
                 }
@@ -95,8 +124,8 @@ impl Renderer<'_> {
         for _ in 0..depth {
             let hit = self.scene.intersect(&current_ray);
             match hit {
-                Some(hit_data) => {
-                    let material = hit_data.material;
+                Some((obj, hit_data)) => {
+                    let material = obj.material();
                     let position = hit_data.position;
                     let normal = hit_data.normal;
 
@@ -134,8 +163,8 @@ impl Renderer<'_> {
 
         let hit = self.scene.intersect(&ray);
         match hit {
-            Some(hit_data) => {
-                let material = hit_data.material;
+            Some((obj, hit_data)) => {
+                let material = obj.material();
                 let position = hit_data.position;
                 let normal = hit_data.normal;
 

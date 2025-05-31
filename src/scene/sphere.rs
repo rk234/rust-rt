@@ -36,7 +36,6 @@ impl SceneObject for Sphere {
                     ray.at(t),
                     (ray.at(t) - self.position).normalized(),
                     Vector3::zero(),
-                    self.material(),
                 ))
             } else {
                 None

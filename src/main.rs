@@ -11,8 +11,6 @@ use rust_rt::scene::Plane;
 use std::f32::consts::PI;
 use std::{ffi::CString, sync::Arc};
 
-use rust_rt::scene::quad::Quad;
-
 fn main() {
     const HEIGHT: i32 = 500;
     const WIDTH: i32 = 16 * HEIGHT / 9;
@@ -201,95 +199,15 @@ fn init_sphere_scene(scene: &mut Scene) {
         Arc::clone(&red_diffuse_mat),
     ));
 
-    let t = Matrix::translate(-1f32, -2f32, 10f32);
+    let t = Matrix::translate(0f32, 0f32, 5f32);
 
-    let mut cube = Mesh::new(
+    let model = Mesh::from_obj(
+        "models/bunny.obj",
         Transform::new(Matrix::rotate_y(PI) * Matrix::scale(50f32, 50f32, 50f32) * t),
         Arc::clone(&white_diffuse_mat),
     );
-    cube.load_obj("models/bunny.obj");
 
-    // scene.add_object(bottom_plane);
+    scene.add_object(bottom_plane);
     // scene.add_object(sphere_b);
-    scene.add_object(Box::new(cube));
-}
-
-fn init_box_scene(scene: &mut Scene) {
-    let white_diffuse_mat: Arc<dyn RTMaterial> = Arc::new(LambertianMaterial::new(Vector3::new(
-        0.5f32, 0.5f32, 0.5f32,
-    )));
-    let red_diffuse_mat: Arc<dyn RTMaterial> =
-        Arc::new(LambertianMaterial::new(Vector3::new(0.65, 0.05, 0.05)));
-    let green_diffuse_mat: Arc<dyn RTMaterial> =
-        Arc::new(LambertianMaterial::new(Vector3::new(0.12, 0.45, 0.15)));
-
-    let metal: Arc<dyn RTMaterial> = Arc::new(MetalMaterial::new(Vector3::new(1.0, 1.0, 1.0), 0.2));
-    let light: Arc<dyn RTMaterial> = Arc::new(EmissiveMaterial::new(
-        Vector3::new(255.0, 225.0, 143.0) * 40.0 / 255.0,
-    ));
-
-    let bottom: Box<dyn SceneObject> = Box::new(Quad::new(
-        Vector3::new(-2.0, 0.0, 1.0),
-        Vector3::new(4.0, 0.0, 0.0),
-        Vector3::new(0.0, 0.0, 4.0),
-        Arc::clone(&white_diffuse_mat),
-    ));
-    let top: Box<dyn SceneObject> = Box::new(Quad::new(
-        Vector3::new(-2.0, 4.0, 1.0),
-        Vector3::new(4.0, 0.0, 0.0),
-        Vector3::new(0.0, 0.0, 4.0),
-        Arc::clone(&white_diffuse_mat),
-    ));
-    let left: Box<dyn SceneObject> = Box::new(Quad::new(
-        Vector3::new(-2.0, 0.0, 1.0),
-        Vector3::new(0.0, 0.0, 4.0),
-        Vector3::new(0.0, 4.0, 0.0),
-        Arc::clone(&red_diffuse_mat),
-    ));
-    let right: Box<dyn SceneObject> = Box::new(Quad::new(
-        Vector3::new(2.0, 0.0, 1.0),
-        Vector3::new(0.0, 0.0, 4.0),
-        Vector3::new(0.0, 4.0, 0.0),
-        Arc::clone(&green_diffuse_mat),
-    ));
-    let back: Box<dyn SceneObject> = Box::new(Quad::new(
-        Vector3::new(-2.0, 0.0, 5.0),
-        Vector3::new(4.0, 0.0, 0.0),
-        Vector3::new(0.0, 4.0, 0.0),
-        Arc::clone(&white_diffuse_mat),
-    ));
-    let light_quad: Box<dyn SceneObject> = Box::new(Quad::new(
-        Vector3::new(-0.375, 3.999, 2.5 - 0.375),
-        Vector3::new(0.75, 0.0, 0.0),
-        Vector3::new(0.0, 0.0, 0.75),
-        Arc::clone(&light),
-    ));
-
-    let bounce_wall: Box<dyn SceneObject> = Box::new(Quad::new(
-        Vector3::new(-100.0, -100.0, 0.0),
-        Vector3::new(1000.0, 0.0, 0.0),
-        Vector3::new(0.0, 1000.0, 0.0),
-        Arc::clone(&white_diffuse_mat),
-    ));
-
-    let sphere_a: Box<dyn SceneObject> = Box::new(Sphere::new(
-        Vector3::new(1.0, 0.75, 3.0),
-        0.75,
-        Arc::clone(&metal),
-    ));
-    let sphere_b: Box<dyn SceneObject> = Box::new(Sphere::new(
-        Vector3::new(-1.0, 0.75, 3.0),
-        0.75,
-        Arc::clone(&white_diffuse_mat),
-    ));
-
-    scene.add_object(bottom);
-    scene.add_object(top);
-    scene.add_object(light_quad);
-    scene.add_object(left);
-    scene.add_object(right);
-    scene.add_object(back);
-    scene.add_object(sphere_a);
-    scene.add_object(sphere_b);
-    scene.add_object(bounce_wall)
+    scene.add_object(Box::new(model));
 }

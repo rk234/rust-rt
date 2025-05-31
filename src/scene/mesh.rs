@@ -3,32 +3,38 @@ use std::{fs, sync::Arc};
 use raylib::math::Vector3;
 use wavefront_obj::obj;
 
-use crate::{math::Transform, rendering::RTMaterial};
+use crate::{
+    math::Transform,
+    rendering::{RTMaterial, Ray},
+};
 
-use super::{HitData, SceneObject, Triangle};
+use super::{
+    bvh::{self, BVH},
+    HitData, SceneObject, Triangle,
+};
 
 pub struct Mesh {
-    pub tris: Vec<Triangle>,
-    pub transform: Transform,
-    pub material: Arc<dyn RTMaterial>,
+    bvh: BVH,
+    transform: Transform,
+    material: Arc<dyn RTMaterial>,
 }
 
 impl Mesh {
-    pub fn new(transform: Transform, material: Arc<dyn RTMaterial>) -> Self {
+    pub fn new(tris: Vec<Triangle>, transform: Transform, material: Arc<dyn RTMaterial>) -> Self {
         Self {
-            tris: vec![],
             transform,
             material,
+            bvh: BVH::new(tris),
         }
     }
 
-    pub fn load_obj(&mut self, path: &str) {
+    pub fn from_obj(path: &str, transform: Transform, material: Arc<dyn RTMaterial>) -> Self {
         if let Ok(file) = fs::read_to_string(path) {
             match obj::parse(file) {
                 Ok(res) => {
                     if let Some(obj) = res.objects.get(0) {
                         println!("Loading {} from obj file at {path}", obj.name);
-                        self.tris = obj
+                        let tris: Vec<Triangle> = obj
                             .geometry
                             .iter()
                             .flat_map(|g| {
@@ -54,7 +60,16 @@ impl Mesh {
                                     _ => None,
                                 })
                             })
-                            .collect()
+                            .collect();
+
+                        let mut mesh = Mesh {
+                            bvh: BVH::new(tris),
+                            transform,
+                            material,
+                        };
+                        mesh.bvh.build();
+
+                        return mesh;
                     }
                 }
                 Err(err) => {
@@ -62,20 +77,24 @@ impl Mesh {
                 }
             }
         }
+        return Mesh {
+            bvh: BVH::new(Vec::new()),
+            transform,
+            material,
+        };
     }
 }
 
 impl SceneObject for Mesh {
-    fn intersect(&self, ray: &crate::rendering::Ray) -> Option<super::HitData> {
-        for tri in &self.tris {
-            if let Some(hit) = tri.intersect(&ray.transform(&self.transform)) {
-                return Some(HitData::new(
-                    hit.p.transform_with(self.transform.m),
-                    hit.normal.transform_with(self.transform.inv.transposed()),
-                    hit.bary,
-                    Arc::clone(&self.material),
-                ));
-            }
+    fn intersect(&self, ray: &Ray) -> Option<super::HitData> {
+        let t_ray = ray.transform(&self.transform);
+
+        if let Some(hit) = self.bvh.intersect(&t_ray) {
+            return Some(HitData::new(
+                hit.position.transform_with(self.transform.m),
+                hit.normal.transform_with(self.transform.inv.transposed()),
+                hit.bary,
+            ));
         }
         None
     }

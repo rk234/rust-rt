@@ -23,15 +23,15 @@ impl Scene {
         }
     }
 
-    pub fn intersect(&self, ray: &Ray) -> Option<HitData> {
-        let mut hit_data: Option<HitData> = None;
+    pub fn intersect(&self, ray: &Ray) -> Option<(&Box<dyn SceneObject>, HitData)> {
+        let mut hit_data: Option<(&Box<dyn SceneObject>, HitData)> = None;
         let mut min_hit_dist: f32 = 10e9f32;
         for obj in &self.scene_objects {
             match obj.intersect(ray) {
                 Some(data) => {
                     let dist = data.position.distance_to(ray.origin);
                     if dist < min_hit_dist {
-                        hit_data = Some(data);
+                        hit_data = Some((obj, data));
                         min_hit_dist = dist;
                     }
                 }
@@ -47,21 +47,16 @@ pub struct HitData {
     pub position: Vector3,
     pub normal: Vector3,
     pub bary: Vector3,
-    pub material: Arc<dyn RTMaterial>,
+    pub node_hits: u32,
 }
 
 impl HitData {
-    pub fn new(
-        position: Vector3,
-        normal: Vector3,
-        bary: Vector3,
-        material: Arc<dyn RTMaterial>,
-    ) -> HitData {
+    pub fn new(position: Vector3, normal: Vector3, bary: Vector3) -> HitData {
         HitData {
             position,
             normal,
             bary,
-            material,
+            node_hits: 0,
         }
     }
 }

@@ -31,8 +31,13 @@ impl AABB {
     }
 
     pub fn include(&mut self, p: Vector3) {
-        self.min = self.min.min(p);
-        self.max = self.max.max(p);
+        if self.min == Vector3::zero() && self.max == Vector3::zero() {
+            self.min = p;
+            self.max = p;
+        } else {
+            self.min = self.min.min(p);
+            self.max = self.max.max(p);
+        }
     }
 
     pub fn from_tris(tris: &[Triangle]) -> AABB {
