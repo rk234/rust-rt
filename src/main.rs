@@ -199,11 +199,11 @@ fn init_sphere_scene(scene: &mut Scene) {
         Arc::clone(&red_diffuse_mat),
     ));
 
-    let t = Matrix::translate(0f32, -1.9f32, 5f32);
+    let t = Matrix::translate(0f32, 3f32, 5f32);
 
     let model = Mesh::from_obj(
-        "models/bunny.obj",
-        Transform::new(Matrix::rotate_y(PI) * Matrix::scale(50f32, 50f32, 50f32) * t),
+        "models/dragon_simple.obj",
+        Transform::new(Matrix::rotate_y(PI) * Matrix::scale(10f32, 10f32, 10f32) * t),
         Arc::clone(&white_diffuse_mat),
     );
 
