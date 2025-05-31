@@ -67,7 +67,7 @@ impl AABB {
         let tz1 = (self.min.z - ray.origin.z) / ray.direction.z;
         let tz2 = (self.max.z - ray.origin.z) / ray.direction.z;
 
-        tmin = tmin.max(ty1.min(tz2));
+        tmin = tmin.max(tz1.min(tz2));
         tmax = tmax.min(tz1.max(tz2));
 
         tmax >= tmin && tmin < 1e30f32 && tmax > 0f32
