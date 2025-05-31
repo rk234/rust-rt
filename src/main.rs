@@ -80,6 +80,8 @@ fn main() {
             if rl.is_key_down(KeyboardKey::KEY_N) {
                 renderer.render_normals(framebuf.width, framebuf.height, &mut framebuf, &mut cam);
                 tex.update_texture(&framebuf.to_bytes());
+                renderer.reset();
+                framebuf.clear();
             } else {
                 renderer.render_sample(framebuf.width, framebuf.height, &mut framebuf, &mut cam);
                 tex.update_texture(&framebuf.to_bytes_s(renderer.num_samples as f32));
